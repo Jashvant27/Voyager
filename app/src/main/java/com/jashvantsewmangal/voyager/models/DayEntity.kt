@@ -8,5 +8,5 @@ import java.time.LocalDate
 data class DayEntity(
     @PrimaryKey val date: LocalDate,
     val locations: List<String>,
-    val imageUri: String,
+    val imageUri: String?,
 )

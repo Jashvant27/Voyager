@@ -14,7 +14,7 @@ interface ActivityDao {
     @Query("SELECT * FROM activities ORDER BY date")
     fun getAllActivities(): Flow<List<ActivityEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertActivity(activity: ActivityEntity)
 
     @Update

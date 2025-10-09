@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class Day(
     val date: LocalDate,
-    val location: String,
+    val locations: List<String>,
     val imageUri: String?,
-    val activities: List<DayActivity>
+    val activities: List<DayActivity>?
 )

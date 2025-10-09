@@ -1,4 +1,4 @@
-package com.jashvantsewmangal.voyager.services
+package com.jashvantsewmangal.voyager.repository
 
 import android.content.Context
 import androidx.room.Room
@@ -31,4 +31,9 @@ object DatabaseModule {
     fun provideActivityDao(db: AppDatabase): ActivityDao = db.activityDao()
 
     @Provides
-    fun provideDayDao(db: AppDatabase): DayDao = db.dayDao()}
+    fun provideDayDao(db: AppDatabase): DayDao = db.dayDao()
+
+    @Provides
+    fun provideDatabaseRepository(activityDao: ActivityDao, dayDao: DayDao, databaseMapper: DatabaseMapper): DatabaseRepository =
+        DatabaseRepository(activityDao, dayDao, databaseMapper)
+}
