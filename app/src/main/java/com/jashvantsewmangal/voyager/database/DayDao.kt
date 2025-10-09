@@ -15,11 +15,11 @@ interface DayDao {
     fun getAllDays(): Flow<List<DayEntity>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertDay(day: DayEntity)
+    suspend fun insertDay(day: DayEntity): Long
 
     @Update
-    suspend fun updateDay(day: DayEntity)
+    suspend fun updateDay(day: DayEntity): Int
 
     @Delete
-    suspend fun deleteDay(day: DayEntity)
+    suspend fun deleteDay(day: DayEntity): Int
 }

@@ -15,11 +15,11 @@ interface ActivityDao {
     fun getAllActivities(): Flow<List<ActivityEntity>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertActivity(activity: ActivityEntity)
+    suspend fun insertActivity(activity: ActivityEntity): Long
 
     @Update
-    suspend fun updateActivity(activity: ActivityEntity)
+    suspend fun updateActivity(activity: ActivityEntity): Int
 
     @Delete
-    suspend fun deleteActivity(activity: ActivityEntity)
+    suspend fun deleteActivity(activity: ActivityEntity): Int
 }

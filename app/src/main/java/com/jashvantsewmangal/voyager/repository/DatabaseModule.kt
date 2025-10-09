@@ -34,6 +34,10 @@ object DatabaseModule {
     fun provideDayDao(db: AppDatabase): DayDao = db.dayDao()
 
     @Provides
+    @Singleton
+    fun provideDatabaseMapper(): DatabaseMapper = DatabaseMapper()
+
+    @Provides
     fun provideDatabaseRepository(activityDao: ActivityDao, dayDao: DayDao, databaseMapper: DatabaseMapper): DatabaseRepository =
         DatabaseRepository(activityDao, dayDao, databaseMapper)
 }
