@@ -39,13 +39,19 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,37 +76,63 @@ import com.jashvantsewmangal.voyager.models.DayActivity
 import com.jashvantsewmangal.voyager.ui.items.ActivityListItem
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import com.jashvantsewmangal.voyager.viewmodel.EditViewModel
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun DetailScreen(
-    day: Day,
+    originalDay: Day,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: EditViewModel = hiltViewModel()
 ) {
+    viewModel.setDay(originalDay, emitToStateFlow = false)
+
     val blockBackPress by viewModel.blockBackPressed.collectAsState()
-    BackHandler(enabled = !blockBackPress) {
-        onBackPressed()
+    BackHandler(enabled = !blockBackPress) { onBackPressed() }
+
+    val day by viewModel.dayStateFlow.collectAsState()
+
+    // Snackbar
+    val toastMessage by viewModel.toastState.collectAsState(null)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let { message ->
+            snackbarHostState.currentSnackbarData?.dismiss()
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = message,
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
     }
 
-    with(sharedTransitionScope) {
-        DetailContent(
-            day = day,
-            sharedTransitionScope = sharedTransitionScope,
-            animatedContentScope = animatedContentScope,
-            onBackPressed = onBackPressed,
-            allowedBack = !blockBackPress,
-            deleteDayAction = viewModel::deleteDay,
-            saveActivityAction = viewModel::saveActivity,
-            editActivityAction = viewModel::updateActivity,
-            deleteActivityAction = viewModel::deleteActivity,
-            modifier = modifier
-        )
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { innerPadding ->
+        with(sharedTransitionScope) {
+            DetailContent(
+                day = day ?: originalDay,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope,
+                onBackPressed = onBackPressed,
+                allowedBack = !blockBackPress,
+                deleteDayAction = viewModel::deleteDay,
+                changeImageAction = viewModel::changeImage,
+                saveActivityAction = viewModel::saveActivity,
+                editActivityAction = viewModel::updateActivity,
+                deleteActivityAction = viewModel::deleteActivity,
+                updateLocationAction = viewModel::updateDayLocation,
+                modifier = modifier.padding(innerPadding)
+            )
+        }
     }
 }
 
@@ -111,6 +143,7 @@ fun SharedTransitionScope.DetailContent(
     animatedContentScope: AnimatedContentScope,
     onBackPressed: () -> Unit,
     allowedBack: Boolean,
+    changeImageAction: (String?) -> Unit,
     deleteDayAction: (Day) -> Unit,
     saveActivityAction: ((
         LocalDate,
@@ -120,6 +153,7 @@ fun SharedTransitionScope.DetailContent(
         String
     ) -> Unit),
     editActivityAction: (DayActivity) -> Unit,
+    updateLocationAction: (List<String>) -> Unit,
     deleteActivityAction: (DayActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -152,10 +186,10 @@ fun SharedTransitionScope.DetailContent(
                 MinimalDropdownMenu(
                     changeImageAction = {
                         // TODO: image picker
+                        // changeImageAction
                     },
-                    removeImageAction = {
-                        // TODO: empty image
-                    },
+                    updateLocationAction =
+                        updateLocationAction,
                     deleteDayAction = {
                         deleteDayAction(day)
                     }
@@ -215,8 +249,8 @@ fun SharedTransitionScope.DetailContent(
 
 @Composable
 fun MinimalDropdownMenu(
-    changeImageAction: () -> Unit,
-    removeImageAction: () -> Unit,
+    changeImageAction: (String?) -> Unit,
+    updateLocationAction: (List<String>) -> Unit,
     deleteDayAction: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -231,19 +265,21 @@ fun MinimalDropdownMenu(
             DropdownMenuItem(
                 text = { Text("Change image") },
                 onClick = {
-                    changeImageAction()
+                    //Image picker to retrieve intent
+//                    changeImageAction()
                 }
             )
             DropdownMenuItem(
                 text = { Text("Remove image") },
                 onClick = {
-                    removeImageAction()
+                    changeImageAction(null)
                 }
             )
             DropdownMenuItem(
                 text = { Text("Change locations") },
                 onClick = {
                     // TODO: pop-up where you can change the locations
+                    // updateLocationAction()
                 }
             )
             DropdownMenuItem(
@@ -412,9 +448,11 @@ fun DetailScreenPreviewable(
                 animatedContentScope = this@AnimatedContent,
                 onBackPressed = {},
                 allowedBack = true,
+                changeImageAction = { _ -> },
                 deleteDayAction = { _ -> },
                 saveActivityAction = { _, _, _, _, _ -> },
                 editActivityAction = { _ -> },
+                updateLocationAction = { _ -> },
                 deleteActivityAction = { _ -> }
             )
         }

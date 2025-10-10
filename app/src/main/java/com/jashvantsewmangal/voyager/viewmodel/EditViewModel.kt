@@ -44,12 +44,39 @@ class EditViewModel @Inject constructor(
      */
     val blockBackPressed: StateFlow<Boolean> = _blockBackPressed
 
+    /**
+     * Private mutable state flow for observing the activities.
+     */
     private val _activityList: MutableList<DayActivity> = mutableListOf()
 
-    private val _activityListState: MutableStateFlow<List<DayActivity>> =
-        MutableStateFlow(emptyList())
+    private var _day: Day? = null
 
-    val activityListState: StateFlow<List<DayActivity>> = _activityListState
+    private val _dayStateFlow: MutableStateFlow<Day?> = MutableStateFlow(null)
+
+    val dayStateFlow: StateFlow<Day?> = _dayStateFlow
+
+    /**
+     * Updates the current [Day] being edited.
+     *
+     * @param day The new [Day] object to set as the current editable item.
+     * @param emitToStateFlow Whether to emit the updated value to [_dayStateFlow] to trigger
+     *                        recomposition. Defaults to `true`. Set to `false` to update the internal
+     *                        state without causing a UI recompose (useful for initial setup).
+     */
+    fun setDay(day: Day, emitToStateFlow: Boolean = true) {
+        // No change, nothing to do
+        if (_day == day) return
+
+        // Update the internal reference
+        _day = day
+
+        // Optionally emit to StateFlow to trigger recomposition
+        if (emitToStateFlow) {
+            viewModelScope.launch {
+                _dayStateFlow.emit(_day)
+            }
+        }
+    }
 
     /**
      * Saves a new [DayActivity] to the database.
@@ -80,7 +107,7 @@ class EditViewModel @Inject constructor(
 
             if (response == ResponseEnum.SUCCESS) {
                 _activityList.add(activity)
-                _activityListState.emit(_activityList)
+                updateDayActivities()
 
                 _toastState.emit(DB_SAVE_SUCCESS)
             }
@@ -92,17 +119,21 @@ class EditViewModel @Inject constructor(
         }
     }
 
+    private fun updateDayActivities(){
+        val originalDay = _day
+
+        originalDay?.let {
+            val day = it.copy(activities = _activityList)
+            setDay(day)
+        }
+    }
+
     /**
      * Updates an existing [DayActivity] in the database.
      *
      * Emits [_toastState] messages for processing, success, or failure.
      *
-     * @param id The unique ID of the activity.
-     * @param date The date when the activity takes place.
-     * @param location The location where the activity occurs.
-     * @param whenType The time type of the activity (either a general period like morning/noon/evening, or a specific time).
-     * @param specific The specific time of the activity, used only if [whenType] requires it.
-     * @param what A short description of the activity being performed.
+     * @param activity The activity to update.
      */
     fun updateActivity(activity: DayActivity) {
         viewModelScope.launch {
@@ -113,7 +144,7 @@ class EditViewModel @Inject constructor(
             if (response == ResponseEnum.SUCCESS) {
                 _activityList.removeAll { it.id == activity.id }
                 _activityList.add(activity)
-                _activityListState.emit(_activityList)
+                updateDayActivities()
 
                 _toastState.emit(DB_UPDATE_SUCCESS)
             }
@@ -141,7 +172,7 @@ class EditViewModel @Inject constructor(
 
             if (response == ResponseEnum.SUCCESS) {
                 _activityList.remove(activity)
-                _activityListState.emit(_activityList)
+                updateDayActivities()
 
                 _toastState.emit(DB_DELETE_SUCCESS)
             }
@@ -158,28 +189,65 @@ class EditViewModel @Inject constructor(
      *
      * Emits [_toastState] messages for processing, success, or failure.
      *
-     * @param date The date representing the unique ID of the day.
      * @param locations The list of cities or countries where the day takes place.
-     * @param imageUri The URI of the cover image representing the day.
-     * @param activities The list of [DayActivity] items planned for that day.
      */
-    fun updateDay(
-        date: LocalDate,
+    fun updateDayLocation(
         locations: List<String>,
-        imageUri: String,
-        activities: List<DayActivity>
     ) {
         viewModelScope.launch {
+
             _blockBackPressed.emit(true)
             _toastState.emit(DB_PROCESSING)
 
-            val day = Day(date, locations, imageUri, activities)
+            val dayCopy: Day? = _day
 
-            val response = repository.updateDay(day)
-            val message = if (response == ResponseEnum.SUCCESS) DB_UPDATE_SUCCESS else DB_FAILURE
+            if (dayCopy != null) {
+                val day = dayCopy.copy(locations = locations)
+
+                val response = repository.updateDay(day)
+
+                if (response == ResponseEnum.SUCCESS) {
+                    setDay(day)
+                    _toastState.emit(DB_UPDATE_SUCCESS)
+                }
+                else {
+                    _toastState.emit(DB_FAILURE)
+                }
+            }
+            else {
+                _toastState.emit("Corrupted item. Please try again.")
+            }
 
             _blockBackPressed.emit(false)
-            _toastState.emit(message)
+        }
+    }
+
+    fun changeImage(imageUri: String?) {
+        viewModelScope.launch {
+
+            _blockBackPressed.emit(true)
+            _toastState.emit(DB_PROCESSING)
+
+            val dayCopy: Day? = _day
+
+            if (dayCopy != null) {
+                val day = dayCopy.copy(imageUri = imageUri)
+
+                val response = repository.updateDay(day)
+
+                if (response == ResponseEnum.SUCCESS) {
+                    setDay(day)
+                    _toastState.emit(DB_UPDATE_SUCCESS)
+                }
+                else {
+                    _toastState.emit(DB_FAILURE)
+                }
+            }
+            else {
+                _toastState.emit("Corrupted item. Please try again.")
+            }
+
+            _blockBackPressed.emit(false)
         }
     }
 
