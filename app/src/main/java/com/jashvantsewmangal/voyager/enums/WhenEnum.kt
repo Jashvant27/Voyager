@@ -4,5 +4,6 @@ enum class WhenEnum {
     MORNING,
     NOON,
     EVENING,
+    NIGHT,
     CUSTOM
 }

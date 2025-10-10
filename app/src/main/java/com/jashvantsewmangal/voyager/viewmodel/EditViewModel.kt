@@ -104,23 +104,14 @@ class EditViewModel @Inject constructor(
      * @param specific The specific time of the activity, used only if [whenType] requires it.
      * @param what A short description of the activity being performed.
      */
-    fun updateActivity(
-        id: String,
-        date: LocalDate,
-        location: String,
-        whenType: WhenEnum,
-        specific: LocalTime,
-        what: String
-    ) {
+    fun updateActivity(activity: DayActivity) {
         viewModelScope.launch {
             _blockBackPressed.emit(true)
             _toastState.emit(DB_PROCESSING)
 
-            val activity = DayActivity(id, date, location, whenType, specific, what)
-
             val response = repository.updateActivity(activity)
             if (response == ResponseEnum.SUCCESS) {
-                _activityList.removeAll { it.id == id }
+                _activityList.removeAll { it.id == activity.id }
                 _activityList.add(activity)
                 _activityListState.emit(_activityList)
 
