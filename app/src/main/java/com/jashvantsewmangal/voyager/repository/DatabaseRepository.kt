@@ -63,15 +63,11 @@ class DatabaseRepository @Inject constructor(
     suspend fun updateDay(day: Day): ResponseEnum {
         val dayEntity = mapper.mapDayToEntity(day)
 
-        if (dayDao.updateDay(dayEntity) == 0) return ResponseEnum.ERROR
+        val response =
+            if (dayDao.updateDay(dayEntity) == 0) ResponseEnum.ERROR
+            else ResponseEnum.SUCCESS
 
-        val activities = day.activities ?: return ResponseEnum.SUCCESS
-
-        activities.forEach {
-            updateActivity(it)
-        }
-
-        return ResponseEnum.SUCCESS
+        return response
     }
 
     /**
@@ -88,7 +84,7 @@ class DatabaseRepository @Inject constructor(
 
         // Check if all activities were saved successfully
         val allSuccessful = activities.all { activity ->
-            saveActivity(activity) == ResponseEnum.SUCCESS
+            deleteActivity(activity) == ResponseEnum.SUCCESS
         }
 
         val response = if (allSuccessful) ResponseEnum.SUCCESS else ResponseEnum.ERROR

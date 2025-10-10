@@ -44,6 +44,12 @@ class EditViewModel @Inject constructor(
      */
     val blockBackPressed: StateFlow<Boolean> = _blockBackPressed
 
+    private val _activityList: MutableList<DayActivity> = mutableListOf()
+
+    private val _activityListState: MutableStateFlow<List<DayActivity>> =
+        MutableStateFlow(emptyList())
+
+    val activityListState: StateFlow<List<DayActivity>> = _activityListState
 
     /**
      * Saves a new [DayActivity] to the database.
@@ -71,10 +77,18 @@ class EditViewModel @Inject constructor(
             val activity = DayActivity(id, date, location, whenType, specific, what)
 
             val response = repository.saveActivity(activity)
-            val message = if (response == ResponseEnum.SUCCESS) DB_SAVE_SUCCESS else DB_FAILURE
+
+            if (response == ResponseEnum.SUCCESS) {
+                _activityList.add(activity)
+                _activityListState.emit(_activityList)
+
+                _toastState.emit(DB_SAVE_SUCCESS)
+            }
+            else {
+                _toastState.emit(DB_FAILURE)
+            }
 
             _blockBackPressed.emit(false)
-            _toastState.emit(message)
         }
     }
 
@@ -105,10 +119,18 @@ class EditViewModel @Inject constructor(
             val activity = DayActivity(id, date, location, whenType, specific, what)
 
             val response = repository.updateActivity(activity)
-            val message = if (response == ResponseEnum.SUCCESS) DB_UPDATE_SUCCESS else DB_FAILURE
+            if (response == ResponseEnum.SUCCESS) {
+                _activityList.removeAll { it.id == id }
+                _activityList.add(activity)
+                _activityListState.emit(_activityList)
+
+                _toastState.emit(DB_UPDATE_SUCCESS)
+            }
+            else {
+                _toastState.emit(DB_FAILURE)
+            }
 
             _blockBackPressed.emit(false)
-            _toastState.emit(message)
         }
     }
 
@@ -125,11 +147,18 @@ class EditViewModel @Inject constructor(
             _toastState.emit(DB_PROCESSING)
 
             val response = repository.deleteActivity(activity)
-            val message =
-                if (response == ResponseEnum.SUCCESS) DB_DELETE_SUCCESS else DB_DELETE_FAILURE
+
+            if (response == ResponseEnum.SUCCESS) {
+                _activityList.remove(activity)
+                _activityListState.emit(_activityList)
+
+                _toastState.emit(DB_DELETE_SUCCESS)
+            }
+            else {
+                _toastState.emit(DB_DELETE_FAILURE)
+            }
 
             _blockBackPressed.emit(false)
-            _toastState.emit(message)
         }
     }
 
