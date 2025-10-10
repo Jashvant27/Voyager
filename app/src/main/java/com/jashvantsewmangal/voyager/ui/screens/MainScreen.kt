@@ -49,7 +49,7 @@ import java.time.LocalDate
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun SharedTransitionScope.MainScreen(
+fun MainScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     onItemClick: (Day) -> Unit,
@@ -162,7 +162,7 @@ fun EmptyScreen(modifier: Modifier) {
 }
 
 @Composable
-fun SharedTransitionScope.ListScreen(
+fun ListScreen(
     items: List<Day>,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
@@ -176,13 +176,15 @@ fun SharedTransitionScope.ListScreen(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(items) { day ->
-            DayListItem(
-                sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope,
-                day = day,
-                onItemClick = onItemClick,
-                modifier = Modifier.fillMaxWidth()
-            )
+            with(sharedTransitionScope){
+                DayListItem(
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope,
+                    day = day,
+                    onItemClick = onItemClick,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

@@ -180,7 +180,6 @@ fun DayListItemPreviewable(
     }
 }
 
-
 @Preview(
     name = "DayListItem - Light Mode",
     showBackground = false,
