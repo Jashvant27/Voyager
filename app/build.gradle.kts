@@ -67,6 +67,13 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
 
+    // Navigation
+    implementation(libs.navigation.compose)
+
+    // Icons
+    implementation(libs.material.icons.extended)
+    implementation(libs.androidx.compose.animation)
+
     // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)

@@ -2,13 +2,7 @@ package com.jashvantsewmangal.voyager.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jashvantsewmangal.voyager.constants.AppConstants.DB_DELETE_FAILURE
-import com.jashvantsewmangal.voyager.constants.AppConstants.DB_DELETE_SUCCESS
-import com.jashvantsewmangal.voyager.constants.AppConstants.DB_FAILURE
-import com.jashvantsewmangal.voyager.constants.AppConstants.DB_PROCESSING
 import com.jashvantsewmangal.voyager.constants.AppConstants.DB_RETRIEVE_FAILURE
-import com.jashvantsewmangal.voyager.constants.AppConstants.DB_SAVE_SUCCESS
-import com.jashvantsewmangal.voyager.constants.AppConstants.DB_UPDATE_SUCCESS
 import com.jashvantsewmangal.voyager.enums.ResponseEnum
 import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
@@ -43,16 +37,6 @@ class MainViewModel @Inject constructor(
      * Public read-only state flow for observing day state changes in the UI.
      */
     val dayState: StateFlow<DayState> = _dayState
-
-    /**
-     * Internal mutable state representing the current toast/snackbar message.
-     */
-    private val _toastState: MutableStateFlow<String> = MutableStateFlow("")
-
-    /**
-     * Public read-only state flow for observing toast/snackbar messages in the UI.
-     */
-    val toastState: StateFlow<String> = _toastState
 
     init {
         fetchData()
@@ -91,116 +75,6 @@ class MainViewModel @Inject constructor(
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Saves a new [DayActivity] to the database.
-     *
-     * Emits [_toastState] messages for processing, success, or failure.
-     *
-     * @param activity The activity to save.
-     */
-    fun saveActivity(activity: DayActivity) {
-        viewModelScope.launch {
-            _toastState.emit(DB_PROCESSING)
-
-            val response = repository.saveActivity(activity)
-            val message = if (response == ResponseEnum.SUCCESS) DB_SAVE_SUCCESS else DB_FAILURE
-
-            _toastState.emit(message)
-        }
-    }
-
-    /**
-     * Updates an existing [DayActivity] in the database.
-     *
-     * Emits [_toastState] messages for processing, success, or failure.
-     *
-     * @param activity The activity to update.
-     */
-    fun updateActivity(activity: DayActivity) {
-        viewModelScope.launch {
-            _toastState.emit(DB_PROCESSING)
-
-            val response = repository.updateActivity(activity)
-            val message = if (response == ResponseEnum.SUCCESS) DB_UPDATE_SUCCESS else DB_FAILURE
-
-            _toastState.emit(message)
-        }
-    }
-
-    /**
-     * Deletes a [DayActivity] from the database.
-     *
-     * Emits [_toastState] messages for processing, success, or failure.
-     *
-     * @param activity The activity to delete.
-     */
-    fun deleteActivity(activity: DayActivity) {
-        viewModelScope.launch {
-            _toastState.emit(DB_PROCESSING)
-
-            val response = repository.deleteActivity(activity)
-            val message =
-                if (response == ResponseEnum.SUCCESS) DB_DELETE_SUCCESS else DB_DELETE_FAILURE
-
-            _toastState.emit(message)
-        }
-    }
-
-    /**
-     * Saves a new [Day] to the database.
-     *
-     * Emits [_toastState] messages for processing, success, or failure.
-     *
-     * @param day The day to save.
-     */
-    fun saveDay(day: Day) {
-        viewModelScope.launch {
-            _toastState.emit(DB_PROCESSING)
-
-            val response = repository.saveDay(day)
-            val message = if (response == ResponseEnum.SUCCESS) DB_SAVE_SUCCESS else DB_FAILURE
-
-            _toastState.emit(message)
-        }
-    }
-
-    /**
-     * Updates an existing [Day] in the database.
-     *
-     * Emits [_toastState] messages for processing, success, or failure.
-     *
-     * @param day The day to update.
-     */
-    fun updateDay(day: Day) {
-        viewModelScope.launch {
-            _toastState.emit(DB_PROCESSING)
-
-            val response = repository.updateDay(day)
-            val message = if (response == ResponseEnum.SUCCESS) DB_UPDATE_SUCCESS else DB_FAILURE
-
-            _toastState.emit(message)
-        }
-    }
-
-    /**
-     * Deletes a [Day] from the database.
-     *
-     * Emits [_toastState] messages for processing, success, or failure.
-     *
-     * @param day The day to delete.
-     */
-    fun deleteDay(day: Day) {
-        viewModelScope.launch {
-            _toastState.emit(DB_PROCESSING)
-
-            val response = repository.deleteDay(day)
-            val message =
-                if (response == ResponseEnum.SUCCESS) DB_DELETE_SUCCESS else DB_DELETE_FAILURE
-
-            _toastState.emit(message)
         }
     }
 }
