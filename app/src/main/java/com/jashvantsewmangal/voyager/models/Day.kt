@@ -3,6 +3,8 @@ package com.jashvantsewmangal.voyager.models
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 @Parcelize
 data class Day(
@@ -12,4 +14,14 @@ data class Day(
     val activities: List<DayActivity>?
 ) : Parcelable {
     fun expired(): Boolean = date.isBefore(LocalDate.now())
+
+    fun formattedLocations(): String =
+        when (locations.size) {
+            0 -> ""
+            1 -> locations[0]
+            2 -> "${locations[0]} & ${locations[1]}"
+            else -> locations.dropLast(1).joinToString(", ") + " & ${locations.last()}"
+        }
+
+    fun formattedDate(): String = "${date.dayOfMonth} ${date.month.getDisplayName(TextStyle.FULL, Locale.getDefault())}"
 }

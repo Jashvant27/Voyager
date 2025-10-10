@@ -15,6 +15,7 @@ ksp = "2.2.20-2.0.4"
 nav = "2.9.5"
 material_icons = "1.7.8"
 animation = "1.9.3"
+coil = "2.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,7 @@ androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-com
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "nav" }
 material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material_icons" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

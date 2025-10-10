@@ -74,6 +74,9 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.androidx.compose.animation)
 
+    //Coil
+    implementation(libs.coil.compose)
+
     // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
