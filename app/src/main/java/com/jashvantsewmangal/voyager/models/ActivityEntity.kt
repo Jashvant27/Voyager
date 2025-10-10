@@ -10,7 +10,7 @@ import java.time.LocalTime
 data class ActivityEntity(
     @PrimaryKey val id: String,
     val date: LocalDate,
-    val location: String,
+    val location: String?,
     val whenType: WhenEnum,
     val specific: LocalTime?, // Only used if whenType == CUSTOM
     val what: String,

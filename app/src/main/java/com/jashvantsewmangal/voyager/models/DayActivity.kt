@@ -10,7 +10,7 @@ import java.time.LocalTime
 data class DayActivity (
     val id: String,
     val date: LocalDate,
-    val location: String,
+    val location: String?,
     val whenType: WhenEnum,
     val specific: LocalTime?,
     val what: String,

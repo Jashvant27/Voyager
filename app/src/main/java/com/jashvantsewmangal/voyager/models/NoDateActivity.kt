@@ -7,7 +7,7 @@ import java.time.LocalTime
 
 @Parcelize
 data class NoDateActivity (
-    val location: String,
+    val location: String?,
     val whenType: WhenEnum,
     val specific: LocalTime?,
     val what: String,

@@ -61,10 +61,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.jashvantsewmangal.voyager.R
+import com.jashvantsewmangal.voyager.enums.WhenEnum
 import com.jashvantsewmangal.voyager.models.Day
+import com.jashvantsewmangal.voyager.models.DayActivity
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import com.jashvantsewmangal.voyager.viewmodel.EditViewModel
 import java.time.LocalDate
+import java.time.LocalTime
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -235,7 +238,7 @@ fun SharedTransitionScope.TitleBar(
     expired: Boolean,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope
-){
+) {
     val titleColor = if (expired)
         MaterialTheme.colorScheme.onSurfaceVariant
     else
@@ -253,7 +256,7 @@ fun SharedTransitionScope.TitleBar(
             )
     )
 
-    val locations  = day.locations
+    val locations = day.locations
 
     FlowRow(
         modifier = Modifier
@@ -308,11 +311,30 @@ fun DetailScreenPreviewable(
 )
 @Composable
 fun PreviewDetailScreen() {
+    val previewActivityCustom = DayActivity(
+        id = "250691_349020omdker",
+        date = LocalDate.of(2025, 12, 18),
+        location = "Samui 82 1, Tambon Ang Thong",
+        whenType = WhenEnum.CUSTOM,
+        specific = LocalTime.of(11, 30),
+        what = "Tree Bridge Jungle Zipline and Waterfall Adventure"
+    )
+
+    val previewActivityNight = DayActivity(
+        id = "253691_349020omdker",
+        date = LocalDate.of(2025, 12, 3),
+        location = null,
+        whenType = WhenEnum.EVENING,
+        specific = null,
+        what = "Victoria Harbour Night Cruise"
+    )
+
+
     val previewDay = Day(
         date = LocalDate.of(2025, 12, 18),
         locations = listOf("Bangkok", "Laem Chaebok", "Pattaya", "Kuala Lumpur"),
         imageUri = null,
-        activities = null
+        activities = listOf(previewActivityCustom, previewActivityNight)
     )
 
     VoyagerTheme {
