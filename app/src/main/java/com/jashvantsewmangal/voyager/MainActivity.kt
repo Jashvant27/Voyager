@@ -117,7 +117,7 @@ class MainActivity : ComponentActivity() {
 
                                 // Display the DetailScreen composable
                                 DetailScreen(
-                                    day = day,
+                                    originalDay = day,
                                     sharedTransitionScope = this@SharedTransitionLayout,
                                     animatedContentScope = this@composable,
                                     onBackPressed = {

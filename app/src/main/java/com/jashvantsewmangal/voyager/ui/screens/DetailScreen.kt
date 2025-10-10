@@ -4,6 +4,9 @@ package com.jashvantsewmangal.voyager.ui.screens
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -161,7 +164,9 @@ fun SharedTransitionScope.DetailContent(
     val activitiesEmpty = day.activities.isNullOrEmpty()
 
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .padding(top=8.dp)
     ) {
         // Top App Bar
         item {
@@ -254,6 +259,14 @@ fun MinimalDropdownMenu(
     deleteDayAction: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    val pickMedia =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                changeImageAction(uri.toString())
+            }
+        }
+
     Box {
         IconButton(onClick = { expanded = !expanded }) {
             Icon(Icons.Default.MoreVert, contentDescription = "More options")
@@ -265,8 +278,8 @@ fun MinimalDropdownMenu(
             DropdownMenuItem(
                 text = { Text("Change image") },
                 onClick = {
-                    //Image picker to retrieve intent
-//                    changeImageAction()
+                    // Launch the photo picker and let the user choose only images.
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
             )
             DropdownMenuItem(
@@ -305,7 +318,7 @@ fun SharedTransitionScope.HeaderImage(
     }
     else {
         rememberAsyncImagePainter(
-            model = imageUri ?: "",
+            model = imageUri,
             error = painterResource(id = R.drawable.fallback),
             fallback = painterResource(id = R.drawable.fallback)
         )
@@ -315,7 +328,6 @@ fun SharedTransitionScope.HeaderImage(
         if (expired) ColorMatrix().apply { setToSaturation(0f) } else ColorMatrix()
     }
 
-    // TODO: check if painter works
     Image(
         painter = painter,
         contentDescription = "Day image",

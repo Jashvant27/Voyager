@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.toRect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.Paint
@@ -90,7 +91,7 @@ private fun SharedTransitionScope.DayImageSection(
     }
     else {
         rememberAsyncImagePainter(
-            model = day.imageUri ?: "",
+            model = day.imageUri,
             error = painterResource(id = R.drawable.fallback),
             fallback = painterResource(id = R.drawable.fallback)
         )
@@ -203,7 +204,8 @@ fun PreviewDayListItem() {
         Surface(
             modifier = Modifier
                 .padding(16.dp)
-                .width(240.dp)
+                .width(240.dp),
+            color = Color.Transparent
         ) {
             DayListItemPreviewable(day = previewDay)
         }
