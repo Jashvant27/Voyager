@@ -18,7 +18,7 @@ data class DayActivity (
     fun sortedTime(): LocalTime =
         when(whenType){
             WhenEnum.MORNING -> LocalTime.of(9, 0)
-            WhenEnum.NOON -> LocalTime.of(12,0)
+            WhenEnum.AFTERNOON -> LocalTime.of(12,0)
             WhenEnum.EVENING -> LocalTime.of(18,0)
             WhenEnum.NIGHT -> LocalTime.of(9,0)
             WhenEnum.CUSTOM -> specific ?: LocalTime.of(23, 59)

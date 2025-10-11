@@ -1,19 +1,18 @@
 package com.jashvantsewmangal.voyager.ui.items
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -28,6 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jashvantsewmangal.voyager.enums.WhenEnum
@@ -62,10 +67,7 @@ fun ActivityListItem(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
             ) {
-                Text(
-                    text = headline,
-                    style = MaterialTheme.typography.titleMedium,
-                )
+                TimeAnnotatedText(displayTime = displayTime, headline = headline)
 
                 supportingText?.let{
                     Text(
@@ -78,30 +80,69 @@ fun ActivityListItem(
             }
         }
 
-        // Second column: time indicator
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(horizontal = 4.dp)
-        ) {
-            AssistChip(
-                onClick = { /* Handle click */ },
-                label = { Text(displayTime) },
-                shape = CircleShape,
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    labelColor = MaterialTheme.colorScheme.primary
-                ),
-                border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.primary)
-            )
-        }
-
-        // Third column: dropdown menu
+        // Second column: dropdown menu
         MinimalDropdownMenu(
             activity = activity,
             editAction = editAction,
             deleteAction = deleteAction
         )
     }
+}
+
+@Composable
+fun TimeAnnotatedText(displayTime: String, headline: String?) {
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = MaterialTheme.typography.titleMedium
+    val density = LocalDensity.current
+
+    val textLayoutResult = remember(displayTime, textStyle) {
+        textMeasurer.measure(
+            text = AnnotatedString(displayTime),
+            style = textStyle
+        )
+    }
+
+    val placeholderWidth = with(density) { textLayoutResult.size.width.toDp() + 12.dp }
+    val placeholderHeight = with(density) { textLayoutResult.size.height.toDp() }
+
+    val annotatedText = buildAnnotatedString {
+        headline?.let {
+            append(it)
+            append("  ")
+        }
+        appendInlineContent("timeTag", "[time]")
+    }
+
+    val inlineContent = mapOf(
+        "timeTag" to InlineTextContent(
+            Placeholder(
+                width = with(density) { placeholderWidth.toSp() },
+                height = with(density) { placeholderHeight.toSp() },
+                placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+            )
+        ) {
+            Surface(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = displayTime,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = textStyle,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 0.dp)
+                )
+            }
+        }
+    )
+
+    Text(
+        text = annotatedText,
+        inlineContent = inlineContent,
+        style = textStyle,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp)
+    )
 }
 
 @Composable

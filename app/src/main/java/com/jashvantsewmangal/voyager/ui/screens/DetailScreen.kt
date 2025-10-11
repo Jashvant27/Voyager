@@ -492,11 +492,20 @@ fun PreviewDetailScreen() {
         what = "Tree Bridge Jungle Zipline and Waterfall Adventure"
     )
 
+    val previewActivityAfternoon = DayActivity(
+        id = "250691_349020o3203mdker",
+        date = LocalDate.of(2025, 12, 14),
+        location = "Chua Buu Dai Son",
+        whenType = WhenEnum.AFTERNOON,
+        specific = null,
+        what = "Private Paragliding Experience in Da Nang"
+    )
+
     val previewActivityNight = DayActivity(
         id = "253691_349020omdker",
         date = LocalDate.of(2025, 12, 3),
         location = null,
-        whenType = WhenEnum.NIGHT,
+        whenType = WhenEnum.EVENING,
         specific = null,
         what = "Victoria Harbour Night Cruise"
     )
@@ -505,7 +514,7 @@ fun PreviewDetailScreen() {
         date = LocalDate.of(2025, 12, 18),
         locations = listOf("Bangkok", "Laem Chaebok", "Pattaya", "Kuala Lumpur"),
         imageUri = null,
-        activities = listOf(previewActivityCustom, previewActivityNight)
+        activities = listOf(previewActivityCustom, previewActivityAfternoon, previewActivityNight)
     )
 
     VoyagerTheme {
