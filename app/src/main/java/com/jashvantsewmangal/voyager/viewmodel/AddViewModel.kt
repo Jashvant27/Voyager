@@ -52,6 +52,16 @@ class AddViewModel @Inject constructor(
      */
     val activityListState: StateFlow<List<NoDateActivity>> = _activityListState
 
+    /**
+     * Internal mutable state representing if the user is allowed to go back (prevent error while loading)
+     */
+    private val _blockBackPressed: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    /**
+     * Public read-only state flow for handling the back-button in the UI.
+     */
+    val blockBackPressed: StateFlow<Boolean> = _blockBackPressed
+
     fun addActivity(
         location: String,
         whenType: WhenEnum,
@@ -93,6 +103,7 @@ class AddViewModel @Inject constructor(
         imageUri: String,
     ) {
         viewModelScope.launch {
+            _blockBackPressed.emit(true)
             _saveState.emit(SaveState.Loading)
 
             val activities = _activityList.map { activity ->
@@ -118,6 +129,7 @@ class AddViewModel @Inject constructor(
                     SaveState.Error(DB_FAILURE)
                 }
 
+            _blockBackPressed.emit(false)
             _saveState.emit(state)
         }
     }

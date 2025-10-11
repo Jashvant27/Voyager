@@ -18,7 +18,7 @@ import com.jashvantsewmangal.voyager.constants.AppConstants.TRANSITION_DURATION
 import com.jashvantsewmangal.voyager.models.Day
 
 @Composable
-fun MainScreen(){
+fun MainScreen() {
     // Remember a NavController for navigation between screens
     val navController = rememberNavController() // Supports transitions
 
@@ -93,7 +93,7 @@ fun MainScreen(){
                 }
             ) {
                 // Display the AddScreen composable
-                AddScreen(onSuccess = {
+                AddScreen(returnFunction = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(navController.graph.id) {
                             inclusive = true
@@ -123,8 +123,12 @@ fun MainScreen(){
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                     onBackPressed = {
-                        // Navigate back to Home screen
-                        navController.navigate(Screen.Home.route)
+                        // Navigate back to Home screen and remove this entry from the back stack
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(navController.graph.id) {
+                                inclusive = true
+                            }
+                        }
                     }
                 )
             }

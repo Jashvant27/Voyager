@@ -2,6 +2,7 @@ package com.jashvantsewmangal.voyager.ui.screens
 
 import android.content.res.Configuration
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,16 +14,27 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,16 +48,19 @@ import java.time.LocalTime
 
 @Composable
 fun AddScreen(
-    onSuccess: () -> Unit,
+    returnFunction: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AddViewModel = hiltViewModel()
 ) {
     val saveState by viewModel.saveState.collectAsState()
+    val blockBackPress by viewModel.blockBackPressed.collectAsState()
+    BackHandler(enabled = !blockBackPress) { returnFunction() }
 
     when (val state = saveState) {
         is SaveState.Done -> SuccessScreen(modifier)
         is SaveState.Error -> ErrorScreen(state.message, modifier)
         is SaveState.Initial -> AddContent(
+            returnFunction = returnFunction,
             saveDayFunction = viewModel::saveDay,
             addActivityFunction = viewModel::addActivity,
             modifier = modifier
@@ -55,8 +70,10 @@ fun AddScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddContent(
+    returnFunction: () -> Unit,
     saveDayFunction: (
         date: LocalDate,
         locations: List<String>,
@@ -68,28 +85,57 @@ fun AddContent(
         specific: LocalTime,
         what: String
     ) -> Unit,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
-    var date: LocalDate? = null
+    var date: LocalDate? by remember { mutableStateOf(null) }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-    ) {
-        DatePickerFieldToModal(
-            onDateSelected = { selectedDate ->
-                date = selectedDate
-                Log.d("selectedDate", date.toString())
-            },
-            modifier = modifier.padding(horizontal = 8.dp)
-        )
-    }
+    Scaffold(
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            LargeTopAppBar(
+                title = { Text("Add Day") },
+                navigationIcon = {
+                    IconButton(onClick = { returnFunction() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        if (date == null) {
+                            // Show snackbar, toast, or dialog prompting for date selection
+                        }
+                        /* save */
 
-    // When clicking on the button
-    if (date == null){
-        // Show message that a date must be selected
+                    }) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = "Save",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                scrollBehavior = scrollBehavior
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+        ) {
+            DatePickerFieldToModal(
+                onDateSelected = { selectedDate ->
+                    date = selectedDate
+                    Log.d("selectedDate", date.toString())
+                },
+                modifier = modifier.padding(8.dp)
+            )
+
+            // You can add more content here…
+        }
     }
 }
 
@@ -141,6 +187,7 @@ fun PreviewInitialScreen() {
     VoyagerTheme {
         Surface {
             AddContent(
+                returnFunction = { },
                 saveDayFunction = { _, _, _ -> },
                 addActivityFunction = { _, _, _, _ -> },
                 modifier = Modifier
