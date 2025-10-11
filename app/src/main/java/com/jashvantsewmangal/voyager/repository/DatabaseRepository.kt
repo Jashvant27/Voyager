@@ -168,6 +168,8 @@ class DatabaseRepository @Inject constructor(
                                                                       it
                                                                   )
                                                               }
+                                                              // Sort the activities in each entity
+                                                              ?.sortedBy { dayActivity -> dayActivity.sortedTime() }
                                                           ?: emptyList() // If no activities, attach empty list
 
                 // Map the DayEntity to a Day domain model with its activities
