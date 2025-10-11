@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AssistChip
@@ -39,7 +40,8 @@ import java.time.LocalTime
 fun ActivityListItem(
     activity: DayActivity,
     editAction: (DayActivity) -> Unit,
-    deleteAction: (DayActivity) -> Unit
+    deleteAction: (DayActivity) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val headline = activity.what
     val supportingText = activity.location
@@ -48,14 +50,14 @@ fun ActivityListItem(
         else activity.whenType.name.lowercase().replaceFirstChar { it.uppercase() }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically, // center vertically
         horizontalArrangement = Arrangement.SpaceBetween // space between columns
     ) {
         // First column: takes remaining width
-        Box(modifier = Modifier.weight(1f)) {
+        SelectionContainer(modifier = Modifier.weight(1f)) {
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start

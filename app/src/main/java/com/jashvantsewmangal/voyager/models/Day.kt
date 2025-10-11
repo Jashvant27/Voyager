@@ -23,5 +23,5 @@ data class Day(
             else -> locations.dropLast(1).joinToString(", ") + " & ${locations.last()}"
         }
 
-    fun formattedDate(): String = "${date.dayOfMonth} ${date.month.getDisplayName(TextStyle.FULL, Locale.getDefault())}"
+    fun formattedDate(): String = "${date.dayOfMonth} ${date.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
 }

@@ -23,7 +23,7 @@ import javax.inject.Inject
  * @property repository Repository for database operations.
  */
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class HomeViewModel @Inject constructor(
     private val repository: DatabaseRepository,
 ) : ViewModel() {
 

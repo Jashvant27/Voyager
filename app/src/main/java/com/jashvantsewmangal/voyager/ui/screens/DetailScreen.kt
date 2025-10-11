@@ -93,23 +93,26 @@ fun DetailScreen(
     modifier: Modifier = Modifier,
     viewModel: EditViewModel = hiltViewModel()
 ) {
-    viewModel.setDay(originalDay, emitToStateFlow = false)
+    // Give the viewmodel the current day
+    LaunchedEffect(Unit) {
+        viewModel.setDay(originalDay, emitToStateFlow = false)
+    }
 
     val blockBackPress by viewModel.blockBackPressed.collectAsState()
     BackHandler(enabled = !blockBackPress) { onBackPressed() }
 
     val day by viewModel.dayStateFlow.collectAsState()
 
-    // Snackbar
+    // SnackBar
     val toastMessage by viewModel.toastState.collectAsState(null)
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(toastMessage) {
         toastMessage?.let { message ->
-            snackbarHostState.currentSnackbarData?.dismiss()
+            snackBarHostState.currentSnackbarData?.dismiss()
             coroutineScope.launch {
-                snackbarHostState.showSnackbar(
+                snackBarHostState.showSnackbar(
                     message = message,
                     duration = SnackbarDuration.Short
                 )
@@ -118,7 +121,7 @@ fun DetailScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { innerPadding ->
         with(sharedTransitionScope) {
             DetailContent(
@@ -146,18 +149,18 @@ fun SharedTransitionScope.DetailContent(
     animatedContentScope: AnimatedContentScope,
     onBackPressed: () -> Unit,
     allowedBack: Boolean,
-    changeImageAction: (String?) -> Unit,
-    deleteDayAction: (Day) -> Unit,
+    changeImageAction: (imageUri: String?) -> Unit,
+    deleteDayAction: (day: Day) -> Unit,
     saveActivityAction: ((
-        LocalDate,
-        String,
-        WhenEnum,
-        LocalTime,
-        String
+        date: LocalDate,
+        location: String,
+        whenType: WhenEnum,
+        specific: LocalTime,
+        what: String
     ) -> Unit),
-    editActivityAction: (DayActivity) -> Unit,
-    updateLocationAction: (List<String>) -> Unit,
-    deleteActivityAction: (DayActivity) -> Unit,
+    editActivityAction: (activity: DayActivity) -> Unit,
+    updateLocationAction: (locations: List<String>) -> Unit,
+    deleteActivityAction: (activity: DayActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val expired = day.expired()
@@ -166,7 +169,7 @@ fun SharedTransitionScope.DetailContent(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(top=8.dp)
+            .padding(top = 8.dp)
     ) {
         // Top App Bar
         item {
@@ -189,10 +192,7 @@ fun SharedTransitionScope.DetailContent(
                 }
 
                 MinimalDropdownMenu(
-                    changeImageAction = {
-                        // TODO: image picker
-                        // changeImageAction
-                    },
+                    changeImageAction = changeImageAction,
                     updateLocationAction =
                         updateLocationAction,
                     deleteDayAction = {
@@ -254,8 +254,8 @@ fun SharedTransitionScope.DetailContent(
 
 @Composable
 fun MinimalDropdownMenu(
-    changeImageAction: (String?) -> Unit,
-    updateLocationAction: (List<String>) -> Unit,
+    changeImageAction: (imageUri: String?) -> Unit,
+    updateLocationAction: (locations: List<String>) -> Unit,
     deleteDayAction: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -405,13 +405,13 @@ fun SharedTransitionScope.TitleBar(
 
 @Composable
 fun NewActivityButton(
-    addSuccessEvent: ((
-        LocalDate,
-        String,
-        WhenEnum,
-        LocalTime,
-        String
-    ) -> Unit),
+    addSuccessEvent: (
+        date: LocalDate,
+        location: String,
+        whenType: WhenEnum,
+        specific: LocalTime,
+        what: String
+    ) -> Unit,
     expired: Boolean,
     emptyActivities: Boolean,
     modifier: Modifier
