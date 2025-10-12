@@ -14,6 +14,7 @@ import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
 import com.jashvantsewmangal.voyager.models.NoDateActivity
 import com.jashvantsewmangal.voyager.repository.DatabaseRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,6 +23,7 @@ import java.time.LocalTime
 import java.util.UUID
 import javax.inject.Inject
 
+@HiltViewModel
 class EditViewModel @Inject constructor(
     private val repository: DatabaseRepository,
 ) : ViewModel() {
@@ -84,7 +86,6 @@ class EditViewModel @Inject constructor(
      *
      * Emits [_toastState] messages for processing, success, or failure.
      *
-     * @param date The date when the activity takes place.
      * @param location The location where the activity occurs.
      * @param whenType The time type of the activity (either a general period like morning/noon/evening, or a specific time).
      * @param specific The specific time of the activity, used only if [whenType] requires it.
@@ -136,7 +137,8 @@ class EditViewModel @Inject constructor(
      *
      * Emits [_toastState] messages for processing, success, or failure.
      *
-     * @param activity The activity to update.
+     * @param noDateActivity The activity to update.
+     * @param activityID The id for the activity to update
      */
     fun updateActivity(activityID: String, noDateActivity: NoDateActivity) {
         viewModelScope.launch {

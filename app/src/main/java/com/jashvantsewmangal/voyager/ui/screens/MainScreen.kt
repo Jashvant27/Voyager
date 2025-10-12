@@ -112,7 +112,7 @@ fun MainScreen() {
                 // Retrieve the Day object from the previous backstack entry
                 val day = navController.previousBackStackEntry
                     ?.savedStateHandle
-                    ?.get<Day>("day")
+                    ?.get<Day>("item")
 
                 // If no Day is found, skip composition
                 if (day == null) return@composable
