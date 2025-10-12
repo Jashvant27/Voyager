@@ -90,7 +90,6 @@ class EditViewModel @Inject constructor(
      * @param what A short description of the activity being performed.
      */
     fun saveActivity(
-        date: LocalDate,
         location: String,
         whenType: WhenEnum,
         specific: LocalTime,
@@ -99,6 +98,9 @@ class EditViewModel @Inject constructor(
         viewModelScope.launch {
             _blockBackPressed.emit(true)
             _toastState.emit(DB_PROCESSING)
+
+            //Fallback is never called since we initialize _day on start
+            val date = _day?.date ?: LocalDate.now()
 
             val id = "${date}_${UUID.randomUUID()}"
             val activity = DayActivity(id, date, location, whenType, specific, what)

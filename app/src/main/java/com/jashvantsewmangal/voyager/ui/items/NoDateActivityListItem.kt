@@ -27,16 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jashvantsewmangal.voyager.enums.WhenEnum
-import com.jashvantsewmangal.voyager.models.DayActivity
+import com.jashvantsewmangal.voyager.models.NoDateActivity
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
-import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
-fun ActivityListItem(
-    activity: DayActivity,
-    editAction: (DayActivity) -> Unit,
-    deleteAction: (DayActivity) -> Unit,
+fun NoDateActivityListItem(
+    activity: NoDateActivity,
+    editAction: (NoDateActivity) -> Unit,
+    deleteAction: (NoDateActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val headline = activity.what
@@ -72,7 +71,7 @@ fun ActivityListItem(
         }
 
         // Second column: dropdown menu
-        MinimalActivityItemDropdownMenu(
+        MinimalNoDateDropdownMenu(
             activity = activity,
             editAction = editAction,
             deleteAction = deleteAction
@@ -81,10 +80,10 @@ fun ActivityListItem(
 }
 
 @Composable
-fun MinimalActivityItemDropdownMenu(
-    activity: DayActivity,
-    editAction: (DayActivity) -> Unit,
-    deleteAction: (DayActivity) -> Unit,
+fun MinimalNoDateDropdownMenu(
+    activity: NoDateActivity,
+    editAction: (NoDateActivity) -> Unit,
+    deleteAction: (NoDateActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -120,10 +119,8 @@ fun MinimalActivityItemDropdownMenu(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-fun ActivityListItemPreview() {
-    val activity = DayActivity(
-        id = "250691_349020omdker",
-        date = LocalDate.of(2025, 12, 18),
+fun NoDateActivityListItemPreview() {
+    val activity = NoDateActivity(
         location = "Samui 82 1, Tambon Ang Thong",
         whenType = WhenEnum.CUSTOM,
         specific = LocalTime.of(11, 30),
@@ -132,7 +129,7 @@ fun ActivityListItemPreview() {
 
     VoyagerTheme {
         Surface {
-            ActivityListItem(
+            NoDateActivityListItem(
                 activity = activity,
                 editAction = {},
                 deleteAction = {}

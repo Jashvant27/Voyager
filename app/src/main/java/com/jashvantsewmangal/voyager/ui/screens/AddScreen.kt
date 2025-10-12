@@ -5,19 +5,21 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -40,7 +42,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.jashvantsewmangal.voyager.enums.WhenEnum
+import com.jashvantsewmangal.voyager.models.NoDateActivity
 import com.jashvantsewmangal.voyager.models.SaveState
+import com.jashvantsewmangal.voyager.ui.components.DatePickerFieldToModal
+import com.jashvantsewmangal.voyager.ui.components.NewActivityBottomSheet
+import com.jashvantsewmangal.voyager.ui.components.NewActivityButton
+import com.jashvantsewmangal.voyager.ui.items.NoDateActivityListItem
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import com.jashvantsewmangal.voyager.viewmodel.AddViewModel
 import java.time.LocalDate
@@ -52,9 +59,11 @@ fun AddScreen(
     modifier: Modifier = Modifier,
     viewModel: AddViewModel = hiltViewModel()
 ) {
-    val saveState by viewModel.saveState.collectAsState()
     val blockBackPress by viewModel.blockBackPressed.collectAsState()
     BackHandler(enabled = !blockBackPress) { returnFunction() }
+
+    val saveState by viewModel.saveState.collectAsState()
+    val activityList by viewModel.activityListState.collectAsState()
 
     when (val state = saveState) {
         is SaveState.Done -> SuccessScreen(modifier)
@@ -63,7 +72,9 @@ fun AddScreen(
             returnFunction = returnFunction,
             saveDayFunction = viewModel::saveDay,
             addActivityFunction = viewModel::addActivity,
-            modifier = modifier
+            deleteActivityAction = viewModel::deleteActivity,
+            modifier = modifier,
+            activities = activityList
         )
 
         is SaveState.Loading -> LoadingScreen(modifier)
@@ -85,11 +96,15 @@ fun AddContent(
         specific: LocalTime,
         what: String
     ) -> Unit,
+    deleteActivityAction: (NoDateActivity) -> Unit,
+    activities: List<NoDateActivity>,
     modifier: Modifier = Modifier
 ) {
     var date: LocalDate? by remember { mutableStateOf(null) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val scrollState = rememberScrollState()
+
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedActivity by remember { mutableStateOf<NoDateActivity?>(null) }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -97,17 +112,17 @@ fun AddContent(
             LargeTopAppBar(
                 title = { Text("Add Day") },
                 navigationIcon = {
-                    IconButton(onClick = { returnFunction() }) {
+                    IconButton(onClick = returnFunction) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
                     IconButton(onClick = {
                         if (date == null) {
-                            // Show snackbar, toast, or dialog prompting for date selection
+                            // Show snackbar or warning
+                        } else {
+                            // saveDayFunction(date!!, ...)
                         }
-                        /* save */
-
                     }) {
                         Icon(
                             Icons.Default.Check,
@@ -120,21 +135,63 @@ fun AddContent(
             )
         }
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(scrollState)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 8.dp)
         ) {
-            DatePickerFieldToModal(
-                onDateSelected = { selectedDate ->
-                    date = selectedDate
-                    Log.d("selectedDate", date.toString())
-                },
-                modifier = modifier.padding(8.dp)
-            )
+            // Date picker section
+            item {
+                DatePickerFieldToModal(
+                    onDateSelected = { selectedDate ->
+                        date = selectedDate
+                        Log.d("selectedDate", date.toString())
+                    },
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
 
-            // You can add more content here…
+            // Activities list
+            items(activities) { activity ->
+                NoDateActivityListItem(
+                    activity = activity,
+                    editAction = {
+                        selectedActivity = activity
+                        showDialog = true
+                    },
+                    deleteAction = deleteActivityAction
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                )
+            }
+
+            // New activity button
+            item {
+                NewActivityButton(
+                    addSuccessEvent = addActivityFunction,
+                    expired = false,
+                    showDialogEvent = {
+                        selectedActivity = null
+                        showDialog = true
+                    },
+                    emptyActivities = activities.isEmpty(),
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+        }
+
+        // Bottom-sheet
+        if (showDialog){
+            NewActivityBottomSheet(activity = selectedActivity) {
+                showDialog = false
+            }
         }
     }
 }
@@ -190,7 +247,9 @@ fun PreviewInitialScreen() {
                 returnFunction = { },
                 saveDayFunction = { _, _, _ -> },
                 addActivityFunction = { _, _, _, _ -> },
-                modifier = Modifier
+                modifier = Modifier,
+                activities = emptyList(),
+                deleteActivityAction = { _ -> }
             )
         }
     }

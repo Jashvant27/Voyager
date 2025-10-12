@@ -14,10 +14,8 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -33,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.rounded.AddCircleOutline
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.DropdownMenu
@@ -76,6 +72,7 @@ import com.jashvantsewmangal.voyager.R
 import com.jashvantsewmangal.voyager.enums.WhenEnum
 import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
+import com.jashvantsewmangal.voyager.ui.components.NewActivityButton
 import com.jashvantsewmangal.voyager.ui.items.ActivityListItem
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import com.jashvantsewmangal.voyager.viewmodel.EditViewModel
@@ -101,8 +98,6 @@ fun DetailScreen(
     val blockBackPress by viewModel.blockBackPressed.collectAsState()
     BackHandler(enabled = !blockBackPress) { onBackPressed() }
 
-    val day by viewModel.dayStateFlow.collectAsState()
-
     // SnackBar
     val toastMessage by viewModel.toastState.collectAsState(null)
     val snackBarHostState = remember { SnackbarHostState() }
@@ -119,6 +114,8 @@ fun DetailScreen(
             }
         }
     }
+
+    val day by viewModel.dayStateFlow.collectAsState()
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
@@ -152,7 +149,6 @@ fun SharedTransitionScope.DetailContent(
     changeImageAction: (imageUri: String?) -> Unit,
     deleteDayAction: (day: Day) -> Unit,
     saveActivityAction: ((
-        date: LocalDate,
         location: String,
         whenType: WhenEnum,
         specific: LocalTime,
@@ -244,6 +240,9 @@ fun SharedTransitionScope.DetailContent(
         item {
             NewActivityButton(
                 addSuccessEvent = saveActivityAction,
+                showDialogEvent = {
+                //TODO: show pop-up
+                },
                 expired = expired,
                 emptyActivities = activitiesEmpty,
                 modifier = modifier
@@ -404,50 +403,6 @@ fun SharedTransitionScope.TitleBar(
 }
 
 @Composable
-fun NewActivityButton(
-    addSuccessEvent: (
-        date: LocalDate,
-        location: String,
-        whenType: WhenEnum,
-        specific: LocalTime,
-        what: String
-    ) -> Unit,
-    expired: Boolean,
-    emptyActivities: Boolean,
-    modifier: Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp)
-            .clickable {
-                // TODO: show PopUpSheet followed by AddSuccessEvent
-            },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val iconColor = if (expired)
-            MaterialTheme.colorScheme.onSurfaceVariant
-        else
-            MaterialTheme.colorScheme.primary
-
-        Icon(
-            imageVector = Icons.Rounded.AddCircleOutline,
-            contentDescription = "Back",
-            tint = iconColor,
-            modifier = Modifier.size(32.dp)
-        )
-        if (emptyActivities) {
-            Text(
-                text = "Add an activity",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-    }
-}
-
-@Composable
 fun DetailScreenPreviewable(
     day: Day
 ) {
@@ -462,7 +417,7 @@ fun DetailScreenPreviewable(
                 allowedBack = true,
                 changeImageAction = { _ -> },
                 deleteDayAction = { _ -> },
-                saveActivityAction = { _, _, _, _, _ -> },
+                saveActivityAction = { _, _, _, _ -> },
                 editActivityAction = { _ -> },
                 updateLocationAction = { _ -> },
                 deleteActivityAction = { _ -> }

@@ -88,6 +88,14 @@ class AddViewModel @Inject constructor(
         }
     }
 
+    fun deleteActivity(activity: NoDateActivity){
+        _activityList.remove(activity)
+
+        viewModelScope.launch {
+            _activityListState.emit(_activityList)
+        }
+    }
+
     /**
      * Saves a new [Day] to the database.
      *

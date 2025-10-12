@@ -1,4 +1,4 @@
-package com.jashvantsewmangal.voyager.ui.screens
+package com.jashvantsewmangal.voyager.ui.components
 
 import android.icu.text.DateFormat
 import androidx.compose.foundation.gestures.awaitEachGesture
