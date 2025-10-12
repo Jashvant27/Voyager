@@ -1,4 +1,4 @@
-package com.jashvantsewmangal.voyager
+package com.jashvantsewmangal.voyager.repository
 
 import android.database.sqlite.SQLiteConstraintException
 import com.jashvantsewmangal.voyager.database.ActivityDao
@@ -9,8 +9,6 @@ import com.jashvantsewmangal.voyager.models.ActivityEntity
 import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
 import com.jashvantsewmangal.voyager.models.DayEntity
-import com.jashvantsewmangal.voyager.repository.DatabaseMapper
-import com.jashvantsewmangal.voyager.repository.DatabaseRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
