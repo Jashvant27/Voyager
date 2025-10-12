@@ -28,7 +28,7 @@ class DatabaseMapper {
     // Day <-> DayEntity
     fun mapDayToEntity(day: Day): DayEntity = DayEntity(
         date = day.date,
-        locations = day.locations, // or merge if multiple?
+        locations = day.locations,
         imageUri = day.imageUri
     )
 

@@ -9,19 +9,22 @@ import java.util.Locale
 @Parcelize
 data class Day(
     val date: LocalDate,
-    val locations: List<String>,
+    val locations: List<String>?,
     val imageUri: String?,
     val activities: List<DayActivity>?
 ) : Parcelable {
     fun expired(): Boolean = date.isBefore(LocalDate.now())
 
-    fun formattedLocations(): String =
-        when (locations.size) {
+    fun formattedLocations(): String?{
+        if (locations == null) return null
+
+        return when (locations.size) {
             0 -> ""
             1 -> locations[0]
             2 -> "${locations[0]} & ${locations[1]}"
             else -> locations.dropLast(1).joinToString(", ") + " & ${locations.last()}"
         }
+    }
 
     fun formattedDate(): String = "${date.dayOfMonth} ${date.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
 }

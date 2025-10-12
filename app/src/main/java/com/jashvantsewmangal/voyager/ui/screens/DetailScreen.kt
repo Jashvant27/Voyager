@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.DropdownMenu
@@ -44,6 +45,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -134,6 +136,8 @@ fun DetailScreen(
     var selectedActivity: NoDateActivity? by remember { mutableStateOf(null) }
     var selectedActivityKey: String? by remember { mutableStateOf(null) }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { innerPadding ->
@@ -144,7 +148,7 @@ fun DetailScreen(
                 animatedContentScope = animatedContentScope,
                 onBackPressed = onBackPressed,
                 allowedBack = !blockBackPress,
-                deleteDayAction = viewModel::deleteDay,
+                deleteDayAction = { showDeleteDialog = true },
                 changeImageAction = viewModel::changeImage,
                 newActivityAction = {
                     selectedActivity = null
@@ -190,7 +194,47 @@ fun DetailScreen(
             editAction = viewModel::updateActivity
         )
     }
+
+    if (showDeleteDialog) {
+        DeleteDayDialog(
+            day = detailDay,
+            onDismiss = { showDeleteDialog = false },
+            onConfirm = { day ->
+                viewModel.deleteDay(day)
+                onBackPressed()
+            }
+        )
+    }
 }
+
+@Composable
+fun DeleteDayDialog(
+    day: Day,
+    onDismiss: () -> Unit,
+    onConfirm: (Day) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = { Text("Delete Day") },
+        text = { Text("Are you sure you want to delete the planning for this entire day?") },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(day)
+                    onDismiss()
+                }
+            ) {
+                Text("Yes")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDismiss() }) {
+                Text("No")
+            }
+        }
+    )
+}
+
 
 @Composable
 private fun SharedTransitionScope.DetailContent(
@@ -200,7 +244,7 @@ private fun SharedTransitionScope.DetailContent(
     onBackPressed: () -> Unit,
     allowedBack: Boolean,
     changeImageAction: (imageUri: String?) -> Unit,
-    deleteDayAction: (day: Day) -> Unit,
+    deleteDayAction: () -> Unit,
     newActivityAction: () -> Unit,
     editActivityAction: (activity: DayActivity) -> Unit,
     updateLocationAction: () -> Unit,
@@ -240,9 +284,7 @@ private fun SharedTransitionScope.DetailContent(
                     changeImageAction = changeImageAction,
                     updateLocationAction =
                         updateLocationAction,
-                    deleteDayAction = {
-                        deleteDayAction(day)
-                    }
+                    deleteDayAction = deleteDayAction
                 )
             }
         }
@@ -429,7 +471,7 @@ private fun SharedTransitionScope.TitleBar(
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        locations.forEach { location ->
+        locations?.forEach { location ->
             AssistChip(
                 onClick = { /* Handle click */ },
                 label = { Text(location) },
@@ -458,7 +500,7 @@ private fun DetailScreenPreviewable(
                 onBackPressed = {},
                 allowedBack = true,
                 changeImageAction = { _ -> },
-                deleteDayAction = { _ -> },
+                deleteDayAction = { -> },
                 newActivityAction = { -> },
                 editActivityAction = { _ -> },
                 updateLocationAction = { -> },

@@ -153,12 +153,16 @@ private fun SharedTransitionScope.DayTextSection(
                 animatedVisibilityScope = animatedContentScope
             )
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = day.formattedLocations(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = subtitleColor
-        )
+        day.formattedLocations()?.let { formattedLocations ->
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = formattedLocations,
+                style = MaterialTheme.typography.bodyMedium,
+                color = subtitleColor
+            )
+        }
     }
 }
 

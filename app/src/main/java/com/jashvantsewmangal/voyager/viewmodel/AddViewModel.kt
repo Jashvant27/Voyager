@@ -136,7 +136,9 @@ class AddViewModel @Inject constructor(
                 )
             }
 
-            val day = Day(date, locations, imageUri, activities)
+            val nullCheckLocations = locations.ifEmpty { null }
+
+            val day = Day(date, nullCheckLocations, imageUri, activities)
 
             val response = repository.saveDay(day)
 

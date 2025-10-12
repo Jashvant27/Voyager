@@ -221,7 +221,8 @@ class EditViewModel @Inject constructor(
             _toastState.emit(DB_PROCESSING)
 
             val dayCopy: Day? = _day
-            val newLocations = dayCopy?.locations?.plus(location) ?: emptyList()
+
+            val newLocations = (dayCopy?.locations ?: emptyList()).plus(location)
 
             if (dayCopy != null) {
                 val day = dayCopy.copy(locations = newLocations)
@@ -260,7 +261,7 @@ class EditViewModel @Inject constructor(
             _toastState.emit(DB_PROCESSING)
 
             val dayCopy: Day? = _day
-            val newLocations = dayCopy?.locations?.minus(location) ?: emptyList()
+            val newLocations = dayCopy?.locations?.minus(location)
 
             if (dayCopy != null) {
                 val day = dayCopy.copy(locations = newLocations)
