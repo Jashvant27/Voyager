@@ -3,6 +3,7 @@
 package com.jashvantsewmangal.voyager.ui.screens
 
 import android.content.res.Configuration
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -62,6 +63,7 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,6 +80,7 @@ import com.jashvantsewmangal.voyager.ui.items.ActivityListItem
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import com.jashvantsewmangal.voyager.viewmodel.EditViewModel
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -100,7 +103,7 @@ fun DetailScreen(
     BackHandler(enabled = !blockBackPress) { onBackPressed() }
 
     // SnackBar
-    val toastMessage by viewModel.toastState.collectAsState(null)
+    val toastMessage by viewModel.toastState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -189,6 +192,7 @@ fun SharedTransitionScope.DetailContent(
                 }
 
                 MinimalDropdownMenu(
+                    date = day.date,
                     changeImageAction = changeImageAction,
                     updateLocationAction =
                         updateLocationAction,
@@ -216,7 +220,7 @@ fun SharedTransitionScope.DetailContent(
         }
 
         day.activities?.let { activities ->
-            items(items = activities, key = { day ->  day.id }) { activity ->
+            items(items = activities, key = { day -> day.id }) { activity ->
                 ActivityListItem(
                     activity = activity,
                     modifier = modifier.animateItem(),
@@ -242,7 +246,7 @@ fun SharedTransitionScope.DetailContent(
         item {
             NewActivityButton(
                 showDialogEvent = {
-                //TODO: show pop-up
+                    //TODO: show pop-up
                 },
                 expired = expired,
                 emptyActivities = activitiesEmpty,
@@ -254,16 +258,26 @@ fun SharedTransitionScope.DetailContent(
 
 @Composable
 fun MinimalDropdownMenu(
+    date: LocalDate,
     changeImageAction: (imageUri: String?) -> Unit,
     updateLocationAction: (locations: List<String>) -> Unit,
     deleteDayAction: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     val pickMedia =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            if (uri != null) {
-                changeImageAction(uri.toString())
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { sourceUri ->
+            if (sourceUri != null) {
+                val inputStream = context.contentResolver.openInputStream(sourceUri)
+                val file = File(context.filesDir, "${date}_header.jpg")
+                inputStream.use { input ->
+                    file.outputStream().use { output ->
+                        input?.copyTo(output)
+                    }
+                }
+                // Convert the saved file to a Uri
+                changeImageAction(Uri.fromFile(file).toString())
             }
         }
 

@@ -30,12 +30,12 @@ class EditViewModel @Inject constructor(
     /**
      * Internal mutable state representing the current toast/snackbar message.
      */
-    private val _toastState: MutableStateFlow<String> = MutableStateFlow("")
+    private val _toastState: MutableStateFlow<String?> = MutableStateFlow(null)
 
     /**
      * Public read-only state flow for observing toast/snackbar messages in the UI.
      */
-    val toastState: StateFlow<String> = _toastState
+    val toastState: StateFlow<String?> = _toastState
 
     /**
      * Internal mutable state representing if the user is allowed to go back (prevent error while loading)
