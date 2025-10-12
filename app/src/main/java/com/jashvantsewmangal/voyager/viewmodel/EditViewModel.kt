@@ -1,7 +1,9 @@
 package com.jashvantsewmangal.voyager.viewmodel
 
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jashvantsewmangal.voyager.constants.AppConstants.DB_ACTIVITY_DELETE_SUCCESS
 import com.jashvantsewmangal.voyager.constants.AppConstants.DB_DELETE_FAILURE
 import com.jashvantsewmangal.voyager.constants.AppConstants.DB_DELETE_SUCCESS
 import com.jashvantsewmangal.voyager.constants.AppConstants.DB_FAILURE
@@ -18,6 +20,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -28,12 +31,12 @@ class EditViewModel @Inject constructor(
     private val repository: DatabaseRepository,
 ) : ViewModel() {
     /**
-     * Internal mutable state representing the current toast/snackbar message.
+     * Internal mutable state representing the current toast/snackBar message.
      */
     private val _toastState: MutableStateFlow<String?> = MutableStateFlow(null)
 
     /**
-     * Public read-only state flow for observing toast/snackbar messages in the UI.
+     * Public read-only state flow for observing toast/snackBar messages in the UI.
      */
     val toastState: StateFlow<String?> = _toastState
 
@@ -46,11 +49,6 @@ class EditViewModel @Inject constructor(
      * Public read-only state flow for handling the back-button in the UI.
      */
     val blockBackPressed: StateFlow<Boolean> = _blockBackPressed
-
-    /**
-     * Private mutable state flow for observing the activities.
-     */
-    private val _activityList: MutableList<DayActivity> = mutableListOf()
 
     private var _day: Day? = null
 
@@ -102,7 +100,8 @@ class EditViewModel @Inject constructor(
             _toastState.emit(DB_PROCESSING)
 
             //Fallback is never called since we initialize _day on start
-            val date = _day?.date ?: LocalDate.now()
+            val dayCopy = _day
+            val date = dayCopy?.date ?: LocalDate.now()
 
             val id = "${date}_${UUID.randomUUID()}"
             val activity = DayActivity(id, date, location, whenType, specific, what)
@@ -110,8 +109,9 @@ class EditViewModel @Inject constructor(
             val response = repository.saveActivity(activity)
 
             if (response == ResponseEnum.SUCCESS) {
-                _activityList.add(activity)
-                updateDayActivities()
+                val activityList = dayCopy?.activities?.toMutableList() ?: mutableListOf()
+                activityList.add(activity)
+                updateDayActivities(activityList)
 
                 _toastState.emit(DB_SAVE_SUCCESS)
             }
@@ -123,11 +123,11 @@ class EditViewModel @Inject constructor(
         }
     }
 
-    private fun updateDayActivities() {
+    private fun updateDayActivities(activityList: List<DayActivity>) {
         val originalDay = _day
 
         originalDay?.let {
-            val day = it.copy(activities = _activityList)
+            val day = it.copy(activities = activityList)
             setDay(day)
         }
     }
@@ -140,12 +140,13 @@ class EditViewModel @Inject constructor(
      * @param noDateActivity The activity to update.
      * @param activityID The id for the activity to update
      */
-    fun updateActivity(activityID: String, noDateActivity: NoDateActivity) {
+    fun updateActivity(noDateActivity: NoDateActivity, activityID: String) {
         viewModelScope.launch {
             _blockBackPressed.emit(true)
             _toastState.emit(DB_PROCESSING)
 
-            val date = _day?.date ?: LocalDate.now()
+            val dayCopy = _day
+            val date = dayCopy?.date ?: LocalDate.now()
             val id = activityID
 
             val activity = DayActivity(
@@ -159,9 +160,11 @@ class EditViewModel @Inject constructor(
 
             val response = repository.updateActivity(activity)
             if (response == ResponseEnum.SUCCESS) {
-                _activityList.removeAll { it.id == activity.id }
-                _activityList.add(activity)
-                updateDayActivities()
+                val activityList = dayCopy?.activities?.toMutableList() ?: mutableListOf()
+                activityList.removeAll { it.id == activity.id }
+                activityList.add(activity)
+
+                updateDayActivities(activityList)
 
                 _toastState.emit(DB_UPDATE_SUCCESS)
             }
@@ -188,10 +191,11 @@ class EditViewModel @Inject constructor(
             val response = repository.deleteActivity(activity)
 
             if (response == ResponseEnum.SUCCESS) {
-                _activityList.remove(activity)
-                updateDayActivities()
+                val activityList = _day?.activities?.toMutableList() ?: mutableListOf()
+                activityList.remove(activity)
+                updateDayActivities(activityList)
 
-                _toastState.emit(DB_DELETE_SUCCESS)
+                _toastState.emit(DB_ACTIVITY_DELETE_SUCCESS)
             }
             else {
                 _toastState.emit(DB_DELETE_FAILURE)
@@ -281,31 +285,42 @@ class EditViewModel @Inject constructor(
 
     fun changeImage(imageUri: String?) {
         viewModelScope.launch {
-
             _blockBackPressed.emit(true)
             _toastState.emit(DB_PROCESSING)
 
-            val dayCopy: Day? = _day
-
-            if (dayCopy != null) {
-                val day = dayCopy.copy(imageUri = imageUri)
-
-                val response = repository.updateDay(day)
-
-                if (response == ResponseEnum.SUCCESS) {
-                    setDay(day)
-                    _toastState.emit(DB_UPDATE_SUCCESS)
-                }
-                else {
-                    _toastState.emit(DB_FAILURE)
-                }
-            }
-            else {
+            val dayCopy = _day
+            if (dayCopy == null) {
                 _toastState.emit("Corrupted item. Please try again.")
+                _blockBackPressed.emit(false)
+                return@launch
             }
+
+            deleteOldImageIfNeeded(dayCopy.imageUri)
+
+            val updatedDay = dayCopy.copy(imageUri = imageUri)
+            val response = repository.updateDay(updatedDay)
+
+            if (response == ResponseEnum.SUCCESS){
+                setDay(updatedDay)
+                _toastState.emit(DB_UPDATE_SUCCESS)
+            } else {
+                _toastState.emit(DB_FAILURE)
+            }
+
+            setDay(updatedDay)
+            _toastState.emit(DB_UPDATE_SUCCESS)
 
             _blockBackPressed.emit(false)
         }
+    }
+
+    @Suppress("S899")
+    private fun deleteOldImageIfNeeded(uriString: String?) {
+        val uri = uriString?.toUri() ?: return
+        if (uri.scheme != "file") return
+
+        val file = File(uri.path ?: return)
+        if (file.exists()) file.delete()
     }
 
     /**

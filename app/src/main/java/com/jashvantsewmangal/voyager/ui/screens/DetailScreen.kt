@@ -3,7 +3,6 @@
 package com.jashvantsewmangal.voyager.ui.screens
 
 import android.content.res.Configuration
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -77,12 +76,13 @@ import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
 import com.jashvantsewmangal.voyager.models.NoDateActivity
 import com.jashvantsewmangal.voyager.ui.components.LocationBottomSheet
+import com.jashvantsewmangal.voyager.ui.components.NewActivityBottomSheet
 import com.jashvantsewmangal.voyager.ui.components.NewActivityButton
+import com.jashvantsewmangal.voyager.ui.components.copyImageToInternalStorage
 import com.jashvantsewmangal.voyager.ui.items.ActivityListItem
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import com.jashvantsewmangal.voyager.viewmodel.EditViewModel
 import kotlinx.coroutines.launch
-import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -118,7 +118,7 @@ fun DetailScreen(
                     duration = SnackbarDuration.Short
                 )
 
-                if(toastMessage == DB_DELETE_SUCCESS){
+                if (toastMessage == DB_DELETE_SUCCESS) {
                     onBackPressed()
                 }
             }
@@ -128,7 +128,11 @@ fun DetailScreen(
 
     val day by viewModel.dayStateFlow.collectAsState()
     val detailDay = day ?: originalDay
-    var showDialog by remember { mutableStateOf(false) }
+    var showLocationDialog by remember { mutableStateOf(false) }
+
+    var showActivityDialog by remember { mutableStateOf(false) }
+    var selectedActivity: NoDateActivity? by remember { mutableStateOf(null) }
+    var selectedActivityKey: String? by remember { mutableStateOf(null) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
@@ -142,21 +146,48 @@ fun DetailScreen(
                 allowedBack = !blockBackPress,
                 deleteDayAction = viewModel::deleteDay,
                 changeImageAction = viewModel::changeImage,
-                saveActivityAction = viewModel::saveActivity,
-                editActivityAction = viewModel::updateActivity,
+                newActivityAction = {
+                    selectedActivity = null
+                    selectedActivityKey = null
+                    showActivityDialog = true
+                },
+                editActivityAction = { dayActivity ->
+                    selectedActivity = NoDateActivity(
+                        location = dayActivity.location,
+                        whenType = dayActivity.whenType,
+                        specific = dayActivity.specific,
+                        what = dayActivity.what
+                    )
+                    selectedActivityKey = dayActivity.id
+                    showActivityDialog = true
+                },
                 deleteActivityAction = viewModel::deleteActivity,
-                updateLocationAction = { showDialog = true },
+                updateLocationAction = { showLocationDialog = true },
                 modifier = modifier.padding(innerPadding)
             )
         }
     }
 
-    if (showDialog) {
-        LocationBottomSheet (
+    if (showLocationDialog) {
+        LocationBottomSheet(
             locations = detailDay.locations,
-            onDismissRequest = {showDialog = false},
+            onDismissRequest = { showLocationDialog = false },
             addFunction = viewModel::addLocation,
             removeFunction = viewModel::removeLocation
+        )
+    }
+
+    if (showActivityDialog) {
+        NewActivityBottomSheet(
+            activity = selectedActivity,
+            activityKey = selectedActivityKey,
+            onDismissRequest = {
+                selectedActivity = null
+                selectedActivityKey = null
+                showActivityDialog = false
+            },
+            saveAction = viewModel::saveActivity,
+            editAction = viewModel::updateActivity
         )
     }
 }
@@ -170,13 +201,8 @@ private fun SharedTransitionScope.DetailContent(
     allowedBack: Boolean,
     changeImageAction: (imageUri: String?) -> Unit,
     deleteDayAction: (day: Day) -> Unit,
-    saveActivityAction: ((
-        location: String,
-        whenType: WhenEnum,
-        specific: LocalTime,
-        what: String
-    ) -> Unit),
-    editActivityAction: (id: String, activity: NoDateActivity) -> Unit,
+    newActivityAction: () -> Unit,
+    editActivityAction: (activity: DayActivity) -> Unit,
     updateLocationAction: () -> Unit,
     deleteActivityAction: (activity: DayActivity) -> Unit,
     modifier: Modifier = Modifier
@@ -242,10 +268,7 @@ private fun SharedTransitionScope.DetailContent(
                 ActivityListItem(
                     activity = activity,
                     modifier = Modifier.animateItem(),
-                    editAction = {
-                        // TODO: show pop-up where you can edit the values in
-                        // On-save call the edit Activity Action with the new values
-                    },
+                    editAction = editActivityAction,
                     deleteAction = deleteActivityAction
                 )
 
@@ -263,9 +286,7 @@ private fun SharedTransitionScope.DetailContent(
         // Optional: New Activity Button
         item {
             NewActivityButton(
-                showDialogEvent = {
-                    //TODO: show pop-up
-                },
+                showDialogEvent = newActivityAction,
                 expired = expired,
                 emptyActivities = activitiesEmpty,
                 modifier = modifier
@@ -287,15 +308,8 @@ private fun MinimalDropdownMenu(
     val pickMedia =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { sourceUri ->
             if (sourceUri != null) {
-                val inputStream = context.contentResolver.openInputStream(sourceUri)
-                val file = File(context.filesDir, "${date}_header.jpg")
-                inputStream.use { input ->
-                    file.outputStream().use { output ->
-                        input?.copyTo(output)
-                    }
-                }
-                // Convert the saved file to a Uri
-                changeImageAction(Uri.fromFile(file).toString())
+                val uri = copyImageToInternalStorage(context, sourceUri, date.toString())
+                changeImageAction(uri)
             }
         }
 
@@ -445,8 +459,8 @@ private fun DetailScreenPreviewable(
                 allowedBack = true,
                 changeImageAction = { _ -> },
                 deleteDayAction = { _ -> },
-                saveActivityAction = { _, _, _, _ -> },
-                editActivityAction = { _, _ -> },
+                newActivityAction = { -> },
+                editActivityAction = { _ -> },
                 updateLocationAction = { -> },
                 deleteActivityAction = { _ -> }
             )

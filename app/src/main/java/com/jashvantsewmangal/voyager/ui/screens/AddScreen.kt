@@ -69,11 +69,11 @@ import com.jashvantsewmangal.voyager.ui.components.DatePickerFieldToModal
 import com.jashvantsewmangal.voyager.ui.components.LocationInput
 import com.jashvantsewmangal.voyager.ui.components.NewActivityBottomSheet
 import com.jashvantsewmangal.voyager.ui.components.NewActivityButton
+import com.jashvantsewmangal.voyager.ui.components.copyImageToInternalStorage
 import com.jashvantsewmangal.voyager.ui.items.NoDateActivityListItem
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import com.jashvantsewmangal.voyager.viewmodel.AddViewModel
 import kotlinx.coroutines.launch
-import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -214,20 +214,10 @@ private fun AddContentTopBar(
                     }
                 }
                 else {
-                    val uri: String? = if (imageUri != null) {
-                        val inputStream = context.contentResolver.openInputStream(imageUri)
-                        val file = File(context.filesDir, "${date}_header.jpg")
-                        inputStream.use { input ->
-                            file.outputStream().use { output ->
-                                input?.copyTo(output)
-                            }
-                        }
-                        // Convert the saved file to a Uri
-                        Uri.fromFile(file).toString()
-                    }
-                    else {
+                    val uri: String? = if (imageUri != null)
+                        copyImageToInternalStorage(context, imageUri, date.toString())
+                    else
                         null
-                    }
 
                     saveDayFunction(date, locations, uri)
                 }
