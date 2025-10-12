@@ -71,10 +71,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.jashvantsewmangal.voyager.R
+import com.jashvantsewmangal.voyager.constants.AppConstants.DB_DELETE_SUCCESS
 import com.jashvantsewmangal.voyager.enums.WhenEnum
 import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
 import com.jashvantsewmangal.voyager.models.NoDateActivity
+import com.jashvantsewmangal.voyager.ui.components.LocationBottomSheet
 import com.jashvantsewmangal.voyager.ui.components.NewActivityButton
 import com.jashvantsewmangal.voyager.ui.items.ActivityListItem
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
@@ -115,18 +117,25 @@ fun DetailScreen(
                     message = message,
                     duration = SnackbarDuration.Short
                 )
+
+                if(toastMessage == DB_DELETE_SUCCESS){
+                    onBackPressed()
+                }
             }
+
         }
     }
 
     val day by viewModel.dayStateFlow.collectAsState()
+    val detailDay = day ?: originalDay
+    var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { innerPadding ->
         with(sharedTransitionScope) {
             DetailContent(
-                day = day ?: originalDay,
+                day = detailDay,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
                 onBackPressed = onBackPressed,
@@ -136,15 +145,24 @@ fun DetailScreen(
                 saveActivityAction = viewModel::saveActivity,
                 editActivityAction = viewModel::updateActivity,
                 deleteActivityAction = viewModel::deleteActivity,
-                updateLocationAction = viewModel::updateDayLocation,
+                updateLocationAction = { showDialog = true },
                 modifier = modifier.padding(innerPadding)
             )
         }
     }
+
+    if (showDialog) {
+        LocationBottomSheet (
+            locations = detailDay.locations,
+            onDismissRequest = {showDialog = false},
+            addFunction = viewModel::addLocation,
+            removeFunction = viewModel::removeLocation
+        )
+    }
 }
 
 @Composable
-fun SharedTransitionScope.DetailContent(
+private fun SharedTransitionScope.DetailContent(
     day: Day,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
@@ -159,7 +177,7 @@ fun SharedTransitionScope.DetailContent(
         what: String
     ) -> Unit),
     editActivityAction: (id: String, activity: NoDateActivity) -> Unit,
-    updateLocationAction: (locations: List<String>) -> Unit,
+    updateLocationAction: () -> Unit,
     deleteActivityAction: (activity: DayActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -176,7 +194,7 @@ fun SharedTransitionScope.DetailContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -223,7 +241,7 @@ fun SharedTransitionScope.DetailContent(
             items(items = activities, key = { day -> day.id }) { activity ->
                 ActivityListItem(
                     activity = activity,
-                    modifier = modifier.animateItem(),
+                    modifier = Modifier.animateItem(),
                     editAction = {
                         // TODO: show pop-up where you can edit the values in
                         // On-save call the edit Activity Action with the new values
@@ -257,10 +275,10 @@ fun SharedTransitionScope.DetailContent(
 }
 
 @Composable
-fun MinimalDropdownMenu(
+private fun MinimalDropdownMenu(
     date: LocalDate,
     changeImageAction: (imageUri: String?) -> Unit,
-    updateLocationAction: (locations: List<String>) -> Unit,
+    updateLocationAction: () -> Unit,
     deleteDayAction: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -304,23 +322,18 @@ fun MinimalDropdownMenu(
             )
             DropdownMenuItem(
                 text = { Text("Change locations") },
-                onClick = {
-                    // TODO: pop-up where you can change the locations
-                    // updateLocationAction()
-                }
+                onClick = updateLocationAction
             )
             DropdownMenuItem(
                 text = { Text("Delete day") },
-                onClick = {
-                    deleteDayAction()
-                }
+                onClick = deleteDayAction
             )
         }
     }
 }
 
 @Composable
-fun SharedTransitionScope.HeaderImage(
+private fun SharedTransitionScope.HeaderImage(
     imageUri: String?,
     date: LocalDate,
     expired: Boolean,
@@ -371,7 +384,7 @@ fun SharedTransitionScope.HeaderImage(
 }
 
 @Composable
-fun SharedTransitionScope.TitleBar(
+private fun SharedTransitionScope.TitleBar(
     day: Day,
     expired: Boolean,
     sharedTransitionScope: SharedTransitionScope,
@@ -418,7 +431,7 @@ fun SharedTransitionScope.TitleBar(
 }
 
 @Composable
-fun DetailScreenPreviewable(
+private fun DetailScreenPreviewable(
     day: Day
 ) {
     // Provide fake scopes for preview
@@ -434,7 +447,7 @@ fun DetailScreenPreviewable(
                 deleteDayAction = { _ -> },
                 saveActivityAction = { _, _, _, _ -> },
                 editActivityAction = { _, _ -> },
-                updateLocationAction = { _ -> },
+                updateLocationAction = { -> },
                 deleteActivityAction = { _ -> }
             )
         }

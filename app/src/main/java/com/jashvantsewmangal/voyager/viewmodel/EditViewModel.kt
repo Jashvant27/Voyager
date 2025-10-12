@@ -202,14 +202,14 @@ class EditViewModel @Inject constructor(
     }
 
     /**
-     * Updates an existing [Day] in the database.
+     * Updates an existing [Day] in the database with a new location
      *
      * Emits [_toastState] messages for processing, success, or failure.
      *
-     * @param locations The list of cities or countries where the day takes place.
+     * @param location A city or country string
      */
-    fun updateDayLocation(
-        locations: List<String>,
+    fun addLocation(
+        location: String,
     ) {
         viewModelScope.launch {
 
@@ -217,9 +217,49 @@ class EditViewModel @Inject constructor(
             _toastState.emit(DB_PROCESSING)
 
             val dayCopy: Day? = _day
+            val newLocations = dayCopy?.locations?.plus(location) ?: emptyList()
 
             if (dayCopy != null) {
-                val day = dayCopy.copy(locations = locations)
+                val day = dayCopy.copy(locations = newLocations)
+
+                val response = repository.updateDay(day)
+
+                if (response == ResponseEnum.SUCCESS) {
+                    setDay(day)
+                    _toastState.emit(DB_UPDATE_SUCCESS)
+                }
+                else {
+                    _toastState.emit(DB_FAILURE)
+                }
+            }
+            else {
+                _toastState.emit("Corrupted item. Please try again.")
+            }
+
+            _blockBackPressed.emit(false)
+        }
+    }
+
+    /**
+     * Updates an existing [Day] in the database by removing a location
+     *
+     * Emits [_toastState] messages for processing, success, or failure.
+     *
+     * @param location A city or country string
+     */
+    fun removeLocation(
+        location: String,
+    ) {
+        viewModelScope.launch {
+
+            _blockBackPressed.emit(true)
+            _toastState.emit(DB_PROCESSING)
+
+            val dayCopy: Day? = _day
+            val newLocations = dayCopy?.locations?.minus(location) ?: emptyList()
+
+            if (dayCopy != null) {
+                val day = dayCopy.copy(locations = newLocations)
 
                 val response = repository.updateDay(day)
 

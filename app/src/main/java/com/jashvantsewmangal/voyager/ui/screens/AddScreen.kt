@@ -12,7 +12,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,16 +22,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,7 +37,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -61,11 +54,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -75,6 +66,7 @@ import com.jashvantsewmangal.voyager.enums.WhenEnum
 import com.jashvantsewmangal.voyager.models.NoDateActivity
 import com.jashvantsewmangal.voyager.models.SaveState
 import com.jashvantsewmangal.voyager.ui.components.DatePickerFieldToModal
+import com.jashvantsewmangal.voyager.ui.components.LocationInput
 import com.jashvantsewmangal.voyager.ui.components.NewActivityBottomSheet
 import com.jashvantsewmangal.voyager.ui.components.NewActivityButton
 import com.jashvantsewmangal.voyager.ui.items.NoDateActivityListItem
@@ -116,7 +108,7 @@ fun AddScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddContent(
+private fun AddContent(
     returnFunction: () -> Unit,
     saveDayFunction: (
         date: LocalDate,
@@ -144,7 +136,7 @@ fun AddContent(
     var imageUri: Uri? by remember { mutableStateOf(null) }
     val locations = remember { mutableStateListOf<String>() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     val pickMedia =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -162,10 +154,10 @@ fun AddContent(
                 saveDayFunction = saveDayFunction,
                 locations = locations,
                 imageUri = imageUri,
-                snackBarHostState = snackbarHostState,
+                snackBarHostState = snackBarHostState,
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { innerPadding ->
         AddContentBody(
             innerPadding = innerPadding,
@@ -270,7 +262,13 @@ private fun AddContentBody(
     ) {
         item { ImagePickerCard(imageUri, onImageSelected) }
         item { DatePickerSection(dateSetter) }
-        item { LocationsSection(locations) }
+        item {
+            LocationInput(
+                locations = locations,
+                addFunction = locations::add,
+                removeFunction = locations::remove
+            )
+        }
         items(items = activities, key = { it.key }) { activity ->
             NoDateActivityListItem(
                 activity = activity,
@@ -353,83 +351,7 @@ private fun DatePickerSection(onDateSelected: (LocalDate) -> Unit) {
 }
 
 @Composable
-private fun LocationsSection(locations: SnapshotStateList<String>) {
-    var locationInput by remember { mutableStateOf("") }
-
-    Column(modifier = Modifier.padding(8.dp)) {
-        OutlinedTextField(
-            value = locationInput,
-            onValueChange = { locationInput = it },
-            placeholder = { Text("Locations") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged { focusState ->
-                    if (!focusState.isFocused) { // TextField lost focus
-                        val trimmed = locationInput.trim()
-                        if (trimmed.isNotEmpty()) {
-                            locations.add(trimmed)
-                            locationInput = ""
-                        }
-                    }
-                },
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        val trimmed = locationInput.trim()
-                        if (trimmed.isNotEmpty()) {
-                            locations.add(trimmed)
-                            locationInput = ""
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Location"
-                    )
-                }
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    val trimmed = locationInput.trim()
-                    if (trimmed.isNotEmpty()) {
-                        locations.add(trimmed)
-                        locationInput = ""
-                    }
-                }
-            )
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            locations.forEach { loc ->
-                AssistChip(
-                    onClick = { },
-                    label = { Text(loc) },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Remove Location",
-                            modifier = Modifier
-                                .size(18.dp)
-                                .clickable { locations.remove(loc) }
-                        )
-                    }
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun SuccessScreen(modifier: Modifier = Modifier, returnFunction: () -> Unit) {
+private fun SuccessScreen(modifier: Modifier = Modifier, returnFunction: () -> Unit) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

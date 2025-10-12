@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -66,18 +68,17 @@ fun HomeScreen(
         },
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            val modifier = Modifier.padding(padding)
             when (val state = dayState) {
-                is DayState.Initial -> LoadingScreen(modifier)
-                is DayState.Loading -> LoadingScreen(modifier)
-                is DayState.Empty -> EmptyScreen(modifier)
-                is DayState.Error -> ErrorScreen(state.message, modifier)
+                is DayState.Initial -> LoadingScreen(Modifier)
+                is DayState.Loading -> LoadingScreen(Modifier)
+                is DayState.Empty -> EmptyScreen(Modifier)
+                is DayState.Error -> ErrorScreen(state.message, Modifier)
                 is DayState.Done -> ListScreen(
                     state.data,
                     sharedTransitionScope,
                     animatedContentScope,
                     onItemClick,
-                    modifier.padding(horizontal = 8.dp)
+                    Modifier.padding(horizontal = 8.dp)
                 )
             }
         }
@@ -85,7 +86,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun EmptyScreen(modifier: Modifier) {
+private fun EmptyScreen(modifier: Modifier) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -118,7 +119,7 @@ fun EmptyScreen(modifier: Modifier) {
 }
 
 @Composable
-fun ListScreen(
+private fun ListScreen(
     items: List<Day>,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
@@ -131,6 +132,28 @@ fun ListScreen(
         verticalItemSpacing = 12.dp,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // Header item that spans both columns
+        item(span = StaggeredGridItemSpan.FullLine) {
+            val greeting = remember {
+                val hour = java.util.Calendar.getInstance()[(java.util.Calendar.HOUR_OF_DAY)]
+                when (hour) {
+                    in 5..11 -> "Good morning"
+                    in 12..16 -> "Good afternoon"
+                    in 17..20 -> "Good evening"
+                    else -> "Good night"
+                }
+            }
+
+            Text(
+                text = greeting,
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+
         items(items = items, key = { day -> day.date }) { day ->
             with(sharedTransitionScope){
                 DayListItem(
