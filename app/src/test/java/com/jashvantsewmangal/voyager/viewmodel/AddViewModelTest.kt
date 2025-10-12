@@ -1,5 +1,6 @@
 package com.jashvantsewmangal.voyager.viewmodel
 
+import androidx.lifecycle.viewModelScope
 import com.jashvantsewmangal.voyager.constants.AppConstants.DB_FAILURE
 import com.jashvantsewmangal.voyager.enums.ResponseEnum
 import com.jashvantsewmangal.voyager.enums.WhenEnum
@@ -9,8 +10,10 @@ import com.jashvantsewmangal.voyager.repository.DatabaseRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
@@ -31,6 +34,12 @@ class AddViewModelTest {
         repository = mockk()
         viewModel = AddViewModel(repository)
         viewModel.activityListState.value // triggers initial emission
+    }
+
+    @After
+    fun tearDown() {
+        // Cancel any active coroutines in the ViewModel scope
+        viewModel.viewModelScope.cancel()
     }
 
     // ---------- addActivity ----------
