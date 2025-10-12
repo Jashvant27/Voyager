@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -73,6 +73,7 @@ fun AddScreen(
             saveDayFunction = viewModel::saveDay,
             addActivityFunction = viewModel::addActivity,
             deleteActivityAction = viewModel::deleteActivity,
+            editActivityFunction = viewModel::editActivity,
             modifier = modifier,
             activities = activityList
         )
@@ -91,10 +92,14 @@ fun AddContent(
         imageUri: String,
     ) -> Unit,
     addActivityFunction: (
-        location: String,
+        location: String?,
         whenType: WhenEnum,
-        specific: LocalTime,
+        specific: LocalTime?,
         what: String
+    ) -> Unit,
+    editActivityFunction: (
+        activity: NoDateActivity,
+        activityIndex: Int,
     ) -> Unit,
     deleteActivityAction: (NoDateActivity) -> Unit,
     activities: List<NoDateActivity>,
@@ -105,6 +110,7 @@ fun AddContent(
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedActivity by remember { mutableStateOf<NoDateActivity?>(null) }
+    var selectedActivityIndex by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -120,7 +126,8 @@ fun AddContent(
                     IconButton(onClick = {
                         if (date == null) {
                             // Show snackbar or warning
-                        } else {
+                        }
+                        else {
                             // saveDayFunction(date!!, ...)
                         }
                     }) {
@@ -153,14 +160,15 @@ fun AddContent(
             }
 
             // Activities list
-            items(activities) { activity ->
+            itemsIndexed(activities) { index, activity ->
                 NoDateActivityListItem(
                     activity = activity,
                     editAction = {
+                        selectedActivityIndex = index
                         selectedActivity = activity
                         showDialog = true
                     },
-                    deleteAction = deleteActivityAction
+                    deleteAction = { deleteActivityAction(activity) }
                 )
 
                 HorizontalDivider(
@@ -175,9 +183,9 @@ fun AddContent(
             // New activity button
             item {
                 NewActivityButton(
-                    addSuccessEvent = addActivityFunction,
                     expired = false,
                     showDialogEvent = {
+                        selectedActivityIndex = null
                         selectedActivity = null
                         showDialog = true
                     },
@@ -188,10 +196,14 @@ fun AddContent(
         }
 
         // Bottom-sheet
-        if (showDialog){
-            NewActivityBottomSheet(activity = selectedActivity) {
-                showDialog = false
-            }
+        if (showDialog) {
+            NewActivityBottomSheet(
+                activityIndex = selectedActivityIndex,
+                activity = selectedActivity,
+                onDismissRequest = { showDialog = false },
+                saveAction = addActivityFunction,
+                editAction = editActivityFunction
+            )
         }
     }
 }
@@ -249,7 +261,8 @@ fun PreviewInitialScreen() {
                 addActivityFunction = { _, _, _, _ -> },
                 modifier = Modifier,
                 activities = emptyList(),
-                deleteActivityAction = { _ -> }
+                deleteActivityAction = { _ -> },
+                editActivityFunction = { _, _ -> }
             )
         }
     }

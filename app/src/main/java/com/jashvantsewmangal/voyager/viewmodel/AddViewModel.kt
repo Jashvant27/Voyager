@@ -63,16 +63,21 @@ class AddViewModel @Inject constructor(
     val blockBackPressed: StateFlow<Boolean> = _blockBackPressed
 
     fun addActivity(
-        location: String,
+        location: String?,
         whenType: WhenEnum,
-        specific: LocalTime,
+        specific: LocalTime?,
         what: String
     ){
         val activity = NoDateActivity(location, whenType, specific, what)
-        _activityList.add(activity)
+        val newSortedList = (_activityList + activity).sortedBy { activity -> activity.sortedTime() }
+
+        _activityList.apply {
+            clear()
+            addAll(newSortedList)
+        }
 
         viewModelScope.launch {
-            _activityListState.emit(_activityList)
+            _activityListState.emit(newSortedList)
         }
     }
 
@@ -81,18 +86,24 @@ class AddViewModel @Inject constructor(
         activityIndex: Int
     ){
         _activityList.removeAt(activityIndex)
-        _activityList.add(activity)
+        val newSortedList = (_activityList + activity).sortedBy { activity -> activity.sortedTime() }
+
+        _activityList.apply {
+            clear()
+            addAll(newSortedList)
+        }
 
         viewModelScope.launch {
-            _activityListState.emit(_activityList)
+            _activityListState.emit(newSortedList)
         }
     }
 
     fun deleteActivity(activity: NoDateActivity){
         _activityList.remove(activity)
+        val newSortedList = _activityList.sortedBy { activity.sortedTime() }
 
         viewModelScope.launch {
-            _activityListState.emit(_activityList)
+            _activityListState.emit(newSortedList)
         }
     }
 

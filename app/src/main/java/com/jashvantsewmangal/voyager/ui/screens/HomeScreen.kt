@@ -107,7 +107,7 @@ fun EmptyScreen(modifier: Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "It seems that there is no data available at the moment",
+                    text = "Your itinerary is empty. Tap the add button to begin planning.",
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.primary

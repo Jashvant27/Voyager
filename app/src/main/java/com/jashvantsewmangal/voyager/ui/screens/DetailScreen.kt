@@ -239,7 +239,6 @@ fun SharedTransitionScope.DetailContent(
         // Optional: New Activity Button
         item {
             NewActivityButton(
-                addSuccessEvent = saveActivityAction,
                 showDialogEvent = {
                 //TODO: show pop-up
                 },

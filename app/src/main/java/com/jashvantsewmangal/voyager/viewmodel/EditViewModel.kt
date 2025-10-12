@@ -73,7 +73,7 @@ class EditViewModel @Inject constructor(
         // Optionally emit to StateFlow to trigger recomposition
         if (emitToStateFlow) {
             viewModelScope.launch {
-                _dayStateFlow.emit(_day)
+                _dayStateFlow.emit(day)
             }
         }
     }
@@ -90,9 +90,9 @@ class EditViewModel @Inject constructor(
      * @param what A short description of the activity being performed.
      */
     fun saveActivity(
-        location: String,
+        location: String?,
         whenType: WhenEnum,
-        specific: LocalTime,
+        specific: LocalTime?,
         what: String
     ) {
         viewModelScope.launch {

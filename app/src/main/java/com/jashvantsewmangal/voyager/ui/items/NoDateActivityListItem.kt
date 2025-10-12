@@ -34,7 +34,7 @@ import java.time.LocalTime
 @Composable
 fun NoDateActivityListItem(
     activity: NoDateActivity,
-    editAction: (NoDateActivity) -> Unit,
+    editAction: () -> Unit,
     deleteAction: (NoDateActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -82,7 +82,7 @@ fun NoDateActivityListItem(
 @Composable
 fun MinimalNoDateDropdownMenu(
     activity: NoDateActivity,
-    editAction: (NoDateActivity) -> Unit,
+    editAction: () -> Unit,
     deleteAction: (NoDateActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -98,7 +98,7 @@ fun MinimalNoDateDropdownMenu(
         ) {
             DropdownMenuItem(
                 text = { Text("Edit") },
-                onClick = { editAction(activity) }
+                onClick = { editAction() }
             )
             DropdownMenuItem(
                 text = { Text("Delete") },
