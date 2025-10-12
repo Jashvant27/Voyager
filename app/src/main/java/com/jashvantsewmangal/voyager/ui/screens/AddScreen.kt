@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -99,7 +99,7 @@ fun AddContent(
     ) -> Unit,
     editActivityFunction: (
         activity: NoDateActivity,
-        activityIndex: Int,
+        activityKey: String,
     ) -> Unit,
     deleteActivityAction: (NoDateActivity) -> Unit,
     activities: List<NoDateActivity>,
@@ -110,7 +110,7 @@ fun AddContent(
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedActivity by remember { mutableStateOf<NoDateActivity?>(null) }
-    var selectedActivityIndex by remember { mutableStateOf<Int?>(null) }
+    var selectedActivityId by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -160,11 +160,14 @@ fun AddContent(
             }
 
             // Activities list
-            itemsIndexed(activities) { index, activity ->
+            items(
+                items = activities,
+                key = { activity -> activity.key }) { activity ->
                 NoDateActivityListItem(
                     activity = activity,
+                    modifier = Modifier.animateItem(),
                     editAction = {
-                        selectedActivityIndex = index
+                        selectedActivityId = activity.key
                         selectedActivity = activity
                         showDialog = true
                     },
@@ -185,7 +188,7 @@ fun AddContent(
                 NewActivityButton(
                     expired = false,
                     showDialogEvent = {
-                        selectedActivityIndex = null
+                        selectedActivityId = null
                         selectedActivity = null
                         showDialog = true
                     },
@@ -198,7 +201,7 @@ fun AddContent(
         // Bottom-sheet
         if (showDialog) {
             NewActivityBottomSheet(
-                activityIndex = selectedActivityIndex,
+                activityKey = selectedActivityId,
                 activity = selectedActivity,
                 onDismissRequest = { showDialog = false },
                 saveAction = addActivityFunction,

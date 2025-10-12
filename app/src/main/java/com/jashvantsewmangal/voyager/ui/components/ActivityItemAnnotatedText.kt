@@ -1,4 +1,4 @@
-package com.jashvantsewmangal.voyager.ui.items
+package com.jashvantsewmangal.voyager.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

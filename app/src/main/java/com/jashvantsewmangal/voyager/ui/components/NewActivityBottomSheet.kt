@@ -44,7 +44,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun NewActivityBottomSheet(
     activity: NoDateActivity?,
-    activityIndex: Int?,
+    activityKey: String?,
     onDismissRequest: () -> Unit,
     saveAction: ((
         location: String?,
@@ -54,7 +54,7 @@ fun NewActivityBottomSheet(
     ) -> Unit)?,
     editAction: ((
         activity: NoDateActivity,
-        activityIndex: Int
+        activityKey: String
     ) -> Unit)?
 ) {
     ModalBottomSheet(onDismissRequest = onDismissRequest) {
@@ -120,7 +120,7 @@ fun NewActivityBottomSheet(
 
                     val whereValue = where.text.ifBlank { null }
 
-                    if (activity != null && activityIndex != null) {
+                    if (activity != null && activityKey != null) {
                         val dayActivity = NoDateActivity(
                             location = whereValue,
                             whenType = whenType,
@@ -128,7 +128,7 @@ fun NewActivityBottomSheet(
                             what = what.text
                         )
 
-                        editAction?.invoke(dayActivity, activityIndex)
+                        editAction?.invoke(dayActivity, activityKey)
                     }
                     else {
                         saveAction?.invoke(
@@ -284,7 +284,7 @@ fun NewActivityDialogPreview() {
                 onDismissRequest = {},
                 saveAction = { _, _, _, _ -> },
                 editAction = null,
-                activityIndex = null
+                activityKey = null
             )
         }
     }

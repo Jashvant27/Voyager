@@ -131,14 +131,16 @@ fun ListScreen(
         verticalItemSpacing = 12.dp,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(items) { day ->
+        items(items = items, key = { day -> day.date }) { day ->
             with(sharedTransitionScope){
                 DayListItem(
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope,
                     day = day,
                     onItemClick = onItemClick,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItem()
                 )
             }
         }

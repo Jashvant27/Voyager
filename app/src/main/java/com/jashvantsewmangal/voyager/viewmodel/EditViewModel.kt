@@ -12,6 +12,7 @@ import com.jashvantsewmangal.voyager.enums.ResponseEnum
 import com.jashvantsewmangal.voyager.enums.WhenEnum
 import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
+import com.jashvantsewmangal.voyager.models.NoDateActivity
 import com.jashvantsewmangal.voyager.repository.DatabaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -121,7 +122,7 @@ class EditViewModel @Inject constructor(
         }
     }
 
-    private fun updateDayActivities(){
+    private fun updateDayActivities() {
         val originalDay = _day
 
         originalDay?.let {
@@ -137,10 +138,22 @@ class EditViewModel @Inject constructor(
      *
      * @param activity The activity to update.
      */
-    fun updateActivity(activity: DayActivity) {
+    fun updateActivity(activityID: String, noDateActivity: NoDateActivity) {
         viewModelScope.launch {
             _blockBackPressed.emit(true)
             _toastState.emit(DB_PROCESSING)
+
+            val date = _day?.date ?: LocalDate.now()
+            val id = activityID
+
+            val activity = DayActivity(
+                id = id,
+                location = noDateActivity.location,
+                date = date,
+                whenType = noDateActivity.whenType,
+                specific = noDateActivity.specific,
+                what = noDateActivity.what
+            )
 
             val response = repository.updateActivity(activity)
             if (response == ResponseEnum.SUCCESS) {

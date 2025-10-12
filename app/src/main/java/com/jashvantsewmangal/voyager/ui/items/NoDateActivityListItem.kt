@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jashvantsewmangal.voyager.enums.WhenEnum
 import com.jashvantsewmangal.voyager.models.NoDateActivity
+import com.jashvantsewmangal.voyager.ui.components.ActivityItemAnnotatedText
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import java.time.LocalTime
 

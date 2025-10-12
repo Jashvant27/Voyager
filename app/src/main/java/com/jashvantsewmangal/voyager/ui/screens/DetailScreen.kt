@@ -72,6 +72,7 @@ import com.jashvantsewmangal.voyager.R
 import com.jashvantsewmangal.voyager.enums.WhenEnum
 import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
+import com.jashvantsewmangal.voyager.models.NoDateActivity
 import com.jashvantsewmangal.voyager.ui.components.NewActivityButton
 import com.jashvantsewmangal.voyager.ui.items.ActivityListItem
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
@@ -154,7 +155,7 @@ fun SharedTransitionScope.DetailContent(
         specific: LocalTime,
         what: String
     ) -> Unit),
-    editActivityAction: (activity: DayActivity) -> Unit,
+    editActivityAction: (id: String, activity: NoDateActivity) -> Unit,
     updateLocationAction: (locations: List<String>) -> Unit,
     deleteActivityAction: (activity: DayActivity) -> Unit,
     modifier: Modifier = Modifier
@@ -215,9 +216,10 @@ fun SharedTransitionScope.DetailContent(
         }
 
         day.activities?.let { activities ->
-            items(items = activities) { activity ->
+            items(items = activities, key = { day ->  day.id }) { activity ->
                 ActivityListItem(
                     activity = activity,
+                    modifier = modifier.animateItem(),
                     editAction = {
                         // TODO: show pop-up where you can edit the values in
                         // On-save call the edit Activity Action with the new values
@@ -417,7 +419,7 @@ fun DetailScreenPreviewable(
                 changeImageAction = { _ -> },
                 deleteDayAction = { _ -> },
                 saveActivityAction = { _, _, _, _ -> },
-                editActivityAction = { _ -> },
+                editActivityAction = { _, _ -> },
                 updateLocationAction = { _ -> },
                 deleteActivityAction = { _ -> }
             )

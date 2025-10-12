@@ -83,9 +83,9 @@ class AddViewModel @Inject constructor(
 
     fun editActivity(
         activity: NoDateActivity,
-        activityIndex: Int
+        activityKey: String?
     ){
-        _activityList.removeAt(activityIndex)
+        _activityList.removeAll { it.key == activityKey }
         val newSortedList = (_activityList + activity).sortedBy { activity -> activity.sortedTime() }
 
         _activityList.apply {
