@@ -119,7 +119,7 @@ class AddViewModel @Inject constructor(
     fun saveDay(
         date: LocalDate,
         locations: List<String>,
-        imageUri: String,
+        imageUri: String?,
     ) {
         viewModelScope.launch {
             _blockBackPressed.emit(true)

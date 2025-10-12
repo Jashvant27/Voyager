@@ -77,7 +77,7 @@ fun HomeScreen(
                     sharedTransitionScope,
                     animatedContentScope,
                     onItemClick,
-                    modifier
+                    modifier.padding(horizontal = 8.dp)
                 )
             }
         }
@@ -143,45 +143,6 @@ fun ListScreen(
                         .animateItem()
                 )
             }
-        }
-    }
-}
-
-@Preview(
-    name = "ErrorScreen - Light",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_NO
-)
-@Preview(
-    name = "ErrorScreen - Dark",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-
-@Composable
-fun PreviewErrorScreen() {
-    VoyagerTheme {
-        Surface {
-            ErrorScreen(message = "Something went wrong!", modifier = Modifier)
-        }
-    }
-}
-
-@Preview(
-    name = "LoadingScreen - Light",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_NO
-)
-@Preview(
-    name = "LoadingScreen - Dark",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-fun PreviewLoadingScreen() {
-    VoyagerTheme {
-        Surface {
-            LoadingScreen(modifier = Modifier)
         }
     }
 }
