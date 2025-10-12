@@ -16,6 +16,9 @@ nav = "2.9.5"
 material_icons = "1.7.8"
 animation = "1.9.3"
 coil = "2.7.0"
+mockk = "1.14.6"
+coroutines = "1.10.2"
+core-testing = "2.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +51,8 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material_icons" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

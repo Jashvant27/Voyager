@@ -90,6 +90,12 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 
+    //Mockito
+    testImplementation(libs.mockk)
+
+    //Coroutines
+    testImplementation(libs.kotlinx.coroutines.test)
+
     // Hilt test
     androidTestImplementation(libs.hilt.android.testing)
 
