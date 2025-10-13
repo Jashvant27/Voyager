@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -26,12 +27,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.toRect
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -40,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.jashvantsewmangal.voyager.R
+import com.jashvantsewmangal.voyager.constants.AppConstants.TRANSITION_DURATION
 import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.ui.theme.VoyagerTheme
 import java.time.LocalDate
@@ -107,22 +107,19 @@ private fun SharedTransitionScope.DayImageSection(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(4f / 3f)
-            .graphicsLayer {
-                if (expired) alpha = 0.7f
-            }
+            .graphicsLayer { if (expired) alpha = 0.7f }
+            // keep sharedElement before clip if you still see issues with overlay clipping:
             .sharedElement(
                 sharedTransitionScope.rememberSharedContentState(key = "image-${day.date}"),
-                animatedVisibilityScope = animatedContentScope
-            )
-            .drawWithContent {
-                val paint = Paint().apply {
-                    colorFilter = ColorFilter.colorMatrix(colorMatrix)
+                animatedVisibilityScope = animatedContentScope,
+                boundsTransform = { _, _ ->
+                    tween(durationMillis = TRANSITION_DURATION)
                 }
-                drawContext.canvas.saveLayer(bounds = size.toRect(), paint)
-                drawContent()
-                drawContext.canvas.restore()
-            },
-        contentScale = ContentScale.Crop
+            )
+            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+        contentScale = ContentScale.Crop,
+        // pass ColorFilter directly instead of saveLayer
+        colorFilter = if (expired) ColorFilter.colorMatrix(colorMatrix) else null
     )
 }
 
@@ -150,7 +147,10 @@ private fun SharedTransitionScope.DayTextSection(
             color = titleColor,
             modifier = Modifier.sharedElement(
                 sharedTransitionScope.rememberSharedContentState(key = "date-${day.date}"),
-                animatedVisibilityScope = animatedContentScope
+                animatedVisibilityScope = animatedContentScope,
+                boundsTransform = { _, _ ->
+                    tween(durationMillis = TRANSITION_DURATION)
+                }
             )
         )
         day.formattedLocations()?.let { formattedLocations ->

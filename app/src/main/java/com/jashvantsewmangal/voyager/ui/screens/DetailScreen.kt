@@ -12,6 +12,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -55,6 +57,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.ColorFilter
@@ -71,6 +74,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.jashvantsewmangal.voyager.R
 import com.jashvantsewmangal.voyager.constants.AppConstants.DB_DELETE_SUCCESS
+import com.jashvantsewmangal.voyager.constants.AppConstants.TRANSITION_DURATION
 import com.jashvantsewmangal.voyager.enums.WhenEnum
 import com.jashvantsewmangal.voyager.models.Day
 import com.jashvantsewmangal.voyager.models.DayActivity
@@ -413,23 +417,19 @@ private fun SharedTransitionScope.HeaderImage(
         painter = painter,
         contentDescription = "Day image",
         modifier = Modifier
-            .fillMaxWidth() // width fills parent
-            .graphicsLayer {
-                if (expired) alpha = 0.7f
-            }
+            .padding(horizontal = 8.dp)
+            .fillMaxWidth()
+            .graphicsLayer { if (expired) alpha = 0.7f }
             .sharedElement(
                 sharedTransitionScope.rememberSharedContentState(key = "image-${date}"),
-                animatedVisibilityScope = animatedContentScope
-            )
-            .drawWithContent {
-                val paint = Paint().apply {
-                    colorFilter = ColorFilter.colorMatrix(colorMatrix)
+                animatedVisibilityScope = animatedContentScope,
+                boundsTransform = { _, _ ->
+                    tween(durationMillis = TRANSITION_DURATION)
                 }
-                drawContext.canvas.saveLayer(bounds = size.toRect(), paint)
-                drawContent()
-                drawContext.canvas.restore()
-            },
-        contentScale = ContentScale.Crop // scales content inside bounds
+            )
+            .clip(RoundedCornerShape(16.dp)),
+        contentScale = ContentScale.Crop,
+        colorFilter = if (expired) ColorFilter.colorMatrix(colorMatrix) else null
     )
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -455,7 +455,10 @@ private fun SharedTransitionScope.TitleBar(
             .padding(start = 16.dp, end = 16.dp, top = 8.dp)
             .sharedElement(
                 sharedTransitionScope.rememberSharedContentState(key = "date-${day.date}"),
-                animatedVisibilityScope = animatedContentScope
+                animatedVisibilityScope = animatedContentScope,
+                boundsTransform = { _, _ ->
+                    tween(durationMillis = TRANSITION_DURATION)
+                }
             )
     )
 
@@ -549,7 +552,11 @@ fun PreviewDetailScreen() {
         date = LocalDate.of(2025, 12, 18),
         locations = listOf("Bangkok", "Laem Chaebok", "Pattaya", "Kuala Lumpur"),
         imageUri = null,
-        activities = listOf(previewActivityCustom, previewActivityAfternoon, previewActivityNight)
+        activities = listOf(
+            previewActivityCustom,
+            previewActivityAfternoon,
+            previewActivityNight
+        )
     )
 
     VoyagerTheme {
