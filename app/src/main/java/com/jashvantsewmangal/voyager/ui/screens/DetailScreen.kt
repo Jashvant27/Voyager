@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -56,7 +55,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.ColorFilter
@@ -415,8 +413,6 @@ private fun SharedTransitionScope.HeaderImage(
         painter = painter,
         contentDescription = "Day image",
         modifier = Modifier
-            .padding(horizontal = 8.dp) // horizontal margin
-            .clip(RoundedCornerShape(12.dp)) // rounded corners
             .fillMaxWidth() // width fills parent
             .graphicsLayer {
                 if (expired) alpha = 0.7f
