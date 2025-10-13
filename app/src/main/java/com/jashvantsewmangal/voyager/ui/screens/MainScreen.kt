@@ -6,8 +6,10 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -42,7 +44,7 @@ fun MainScreen() {
                         )
                     }
                     else {
-                        scaleIn(animationSpec = tween(TRANSITION_DURATION))
+                        expandVertically(animationSpec = tween(TRANSITION_DURATION))
                     }
                 },
                 exitTransition = {
@@ -53,7 +55,7 @@ fun MainScreen() {
                         )
                     }
                     else {
-                        scaleOut(animationSpec = tween(TRANSITION_DURATION))
+                        shrinkVertically(animationSpec = tween(TRANSITION_DURATION))
                     }
                 }
             ) {
