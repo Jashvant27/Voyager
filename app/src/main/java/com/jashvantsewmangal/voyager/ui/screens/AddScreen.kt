@@ -43,6 +43,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -146,7 +147,9 @@ private fun AddContent(
         }
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AddContentTopBar(
                 returnFunction = returnFunction,
@@ -155,12 +158,14 @@ private fun AddContent(
                 locations = locations,
                 imageUri = imageUri,
                 snackBarHostState = snackBarHostState,
+                scrollBehaviour = scrollBehavior
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { innerPadding ->
         AddContentBody(
             innerPadding = innerPadding,
+            scrollBehavior = scrollBehavior,
             dateSetter = { date = it },
             imageUri = imageUri,
             onImageSelected = { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
@@ -194,6 +199,7 @@ private fun AddContentTopBar(
     saveDayFunction: (LocalDate, List<String>, String?) -> Unit,
     locations: List<String>,
     imageUri: Uri?,
+    scrollBehaviour: TopAppBarScrollBehavior,
     snackBarHostState: SnackbarHostState,
 ) {
     val scope = rememberCoroutineScope()
@@ -229,24 +235,27 @@ private fun AddContentTopBar(
                 )
             }
         },
-        scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        scrollBehavior = scrollBehaviour
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddContentBody(
     innerPadding: PaddingValues,
+    scrollBehavior: TopAppBarScrollBehavior,
     dateSetter: (LocalDate) -> Unit,
     imageUri: Uri?,
     onImageSelected: () -> Unit,
     locations: SnapshotStateList<String>,
     activities: List<NoDateActivity>,
     selectActivity: (NoDateActivity?, String?) -> Unit,
-    deleteActivityAction: (NoDateActivity) -> Unit
+    deleteActivityAction: (NoDateActivity) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
             .padding(innerPadding)
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
             .fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {

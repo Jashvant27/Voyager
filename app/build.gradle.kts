@@ -37,6 +37,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            javaCompileOptions {
+                annotationProcessorOptions {
+                    arguments["room.schemaLocation"] = "$projectDir/schemas"
+                }
+            }
         }
     }
     compileOptions {
