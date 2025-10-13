@@ -17,10 +17,16 @@
 ---
 
 ## Screenshots
-
-TODO: add screenshots
-
----
+<table>
+  <tr>
+    <td><img src="./screenshots/homescreen.jpg" alt="Home Screen" width="300"/></td>
+    <td><img src="./screenshots/detailscreen.jpg" alt="Detail Screen" width="300"/></td>
+  </tr>
+  <tr>
+    <td><img src="./screenshots/addscreen.jpg" alt="Add Screen" width="300"/></td>
+    <td><img src="./screenshots/addscreen_activity_pop_up.jpg" alt="Add Screen (New Activity Pop-Up)" width="300"/></td>
+  </tr>
+</table>
 
 ## Tech Stack
 
