@@ -3,11 +3,11 @@
 package com.jashvantsewmangal.voyager.ui.screens
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -42,7 +42,7 @@ fun MainScreen() {
                         )
                     }
                     else {
-                        EnterTransition.None
+                        scaleIn(animationSpec = tween(TRANSITION_DURATION))
                     }
                 },
                 exitTransition = {
@@ -53,7 +53,7 @@ fun MainScreen() {
                         )
                     }
                     else {
-                        ExitTransition.None
+                        scaleOut(animationSpec = tween(TRANSITION_DURATION))
                     }
                 }
             ) {
@@ -107,7 +107,17 @@ fun MainScreen() {
                 Screen.Details.route,
                 arguments = listOf(navArgument("item") {
                     type = NavType.StringType
-                })
+                }),
+                enterTransition = {
+                    scaleIn(
+                        animationSpec = tween(TRANSITION_DURATION) // 700ms animation
+                    )
+                },
+                exitTransition = {
+                    scaleOut(
+                        animationSpec = tween(TRANSITION_DURATION)
+                    )
+                }
             ) {
                 // Retrieve the Day object from the previous backstack entry
                 val day = navController.previousBackStackEntry
