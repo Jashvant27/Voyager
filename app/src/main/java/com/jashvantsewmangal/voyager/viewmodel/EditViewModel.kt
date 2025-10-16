@@ -110,7 +110,10 @@ class EditViewModel @Inject constructor(
 
             if (response == ResponseEnum.SUCCESS) {
                 val activityList = dayCopy?.activities?.toMutableList() ?: mutableListOf()
-                activityList.add(activity)
+                activityList.apply{
+                    add(activity)
+                    sortedBy { activity -> activity.sortedTime() }
+                }
                 updateDayActivities(activityList)
 
                 _toastState.emit(DB_SAVE_SUCCESS)
@@ -161,8 +164,11 @@ class EditViewModel @Inject constructor(
             val response = repository.updateActivity(activity)
             if (response == ResponseEnum.SUCCESS) {
                 val activityList = dayCopy?.activities?.toMutableList() ?: mutableListOf()
-                activityList.removeAll { it.id == activity.id }
-                activityList.add(activity)
+                activityList.apply {
+                    removeAll { it.id == activity.id }
+                    sortedBy { activity -> activity.sortedTime() }
+                    add(activity)
+                }
 
                 updateDayActivities(activityList)
 
