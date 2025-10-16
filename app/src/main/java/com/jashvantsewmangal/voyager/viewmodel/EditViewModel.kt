@@ -166,8 +166,8 @@ class EditViewModel @Inject constructor(
                 val activityList = dayCopy?.activities?.toMutableList() ?: mutableListOf()
                 activityList.apply {
                     removeAll { it.id == activity.id }
-                    sortedBy { activity -> activity.sortedTime() }
                     add(activity)
+                    sortedBy { activity -> activity.sortedTime() }
                 }
 
                 updateDayActivities(activityList)
