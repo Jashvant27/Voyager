@@ -445,7 +445,7 @@ private fun SharedTransitionScope.TitleBar(
         MaterialTheme.colorScheme.primary
 
     Text(
-        text = "${day.formattedDate()} (${day.dayOfTheWeek()})",
+        text = day.formattedDate(),
         style = MaterialTheme.typography.headlineLarge,
         color = titleColor,
         modifier = Modifier
@@ -457,6 +457,14 @@ private fun SharedTransitionScope.TitleBar(
                     tween(durationMillis = TRANSITION_DURATION)
                 }
             )
+    )
+
+    Text(
+        text = "(${day.dayOfTheWeek()})",
+        style = MaterialTheme.typography.headlineLarge,
+        color = titleColor,
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp)
     )
 
     val locations = day.locations
