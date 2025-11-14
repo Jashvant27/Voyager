@@ -26,10 +26,6 @@ data class Day(
         }
     }
 
-    fun formattedDate(): String {
-        val day = date.dayOfMonth
-        val month = date.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
-        val weekday = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
-        return "$day $month ($weekday)"
-    }
+    fun formattedDate(): String = "${date.dayOfMonth} ${date.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
+    fun dayOfTheWeek(): String = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
 }

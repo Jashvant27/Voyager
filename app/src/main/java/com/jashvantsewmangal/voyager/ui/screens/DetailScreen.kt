@@ -445,7 +445,7 @@ private fun SharedTransitionScope.TitleBar(
         MaterialTheme.colorScheme.primary
 
     Text(
-        text = day.formattedDate(),
+        text = "${day.formattedDate()} (${day.dayOfTheWeek()})",
         style = MaterialTheme.typography.headlineLarge,
         color = titleColor,
         modifier = Modifier
